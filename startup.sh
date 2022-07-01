@@ -5,5 +5,5 @@ export ZSH="$SCRIPT_PATH/.oh-my-zsh"
 ZSH_THEME="happyz"
 
 # Config
-export XDG_CONFIG_HOME="$SCRIPT_PATH/.config"
+export XDG_CONFIG_DIRS="$SCRIPT_PATH/.config:$XDG_CONFIG_DIRS"
 
