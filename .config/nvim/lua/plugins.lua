@@ -1,8 +1,16 @@
 -- Install packer if not available
-local fn = vim.fn
-local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-if fn.empty(fn.glob(install_path)) > 0 then
-  packer_bootstrap = fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+local packer_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+if vim.fn.empty(vim.fn.glob(packer_path)) > 0 then
+	print('NEW INSTALLATION DETECTED.')
+	print('Packer will now be installed.')
+	print('You will need to restart neovim.')
+	print('After it restarts, you will need to run :PackerSync a few times.')
+	packer_bootstrap = vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', packer_path})
+end
+
+local is_installed = function(package)
+	local test, module = pcall(require, package)
+	return test
 end
 
 return require('packer').startup{
@@ -27,34 +35,26 @@ return require('packer').startup{
 			run = 'make'
 		}
 
-		require('telescope').setup()
-		require('telescope').load_extension('fzf')
-
 		-- Treesitter
+		if is_installed('nvim-treesitter/nvim-treesitter') then
+			use {
+				'nvim-treesitter/nvim-treesitter',
+				run = ':TSUpdate'
+			}
+		else
+			use 'nvim-treesitter/nvim-treesitter'
+		end
 		use {
-			'nvim-treesitter/nvim-treesitter',
-			run = ':TSUpdate'
-		}
-		use 'p00f/nvim-ts-rainbow'
-
-		require('nvim-treesitter.configs').setup{
-			ensure_installed = "all",
-			sync_installl = false,
-			highlight = {
-				enable = true
-			},
-			indent = {
-				enable = true
-			},
-			rainbow = {
-				enable = true
+			'p00f/nvim-ts-rainbow',
+			requires = {
+				{'nvim-treesitter/nvim-treesitter'}
 			}
 		}
 	end,
-	config = {
-		display = {
-			open_fn = require('packer.util').float
-		}
-	}
+	--config = {
+	--	display = {
+	--		open_fn = require('packer.util').float
+	--	}
+	--}
 }
 

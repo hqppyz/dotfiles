@@ -1,5 +1,5 @@
 lua << EOF
-require('settings')
 require('plugins')
+require('settings')
 EOF
 
