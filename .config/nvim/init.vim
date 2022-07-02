@@ -1,5 +1,5 @@
-set number
-set tabstop=4
-set shiftwidth=4
-set winbar=%f
+lua << EOF
+require('settings')
+require('plugins')
+EOF
 
