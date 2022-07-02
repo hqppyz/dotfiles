@@ -51,10 +51,10 @@ return require('packer').startup{
 			}
 		}
 	end,
-	--config = {
-	--	display = {
-	--		open_fn = require('packer.util').float
-	--	}
-	--}
+	config = {
+		display = {
+			open_fn = require('packer.util').float
+		}
+	}
 }
 
