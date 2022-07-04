@@ -63,5 +63,11 @@ return packer.startup{function()
 
 	-- LSP
 	use 'neovim/nvim-lspconfig'
+
+	-- Catppuccin
+	use {
+		'catppuccin/nvim',
+		as = 'catppuccin'
+	}
 end}
 

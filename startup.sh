@@ -7,5 +7,5 @@ export XDG_CONFIG_DIRS="$SCRIPT_PATH/.config:$XDG_CONFIG_DIRS"
 export ZSH="$SCRIPT_PATH/.oh-my-zsh"
 ZSH_THEME="happyz"
 plugins=(git)
-source /.oh-my-zsh/oh-my-zsh.sh
+source $ZSH/oh-my-zsh.sh
 
