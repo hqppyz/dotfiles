@@ -69,5 +69,8 @@ return packer.startup{function()
 		'catppuccin/nvim',
 		as = 'catppuccin'
 	}
+
+	-- MIPS
+	use 'harenome/vim-mipssyntax'
 end}
 
