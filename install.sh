@@ -4,7 +4,6 @@
 # Nightly NeoVim
 # ripgrep (opt)
 # fd-find (opt)
-# clangd-12
 
 # Configurations
 mkdir -p ~/.local/src/mdotfiles

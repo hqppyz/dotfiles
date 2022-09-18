@@ -69,5 +69,8 @@ return packer.startup{function()
 		'catppuccin/nvim',
 		as = 'catppuccin'
 	}
+
+	-- Horizontal Scrollinga
+	use 'sebastiansam55/hscroll'
 end}
 
