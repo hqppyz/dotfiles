@@ -70,7 +70,7 @@ return packer.startup{function()
 		as = 'catppuccin'
 	}
 
-	-- Horizontal Scrollinga
-	use 'sebastiansam55/hscroll'
+	-- MIPS
+	use 'harenome/vim-mipssyntax'
 end}
 
