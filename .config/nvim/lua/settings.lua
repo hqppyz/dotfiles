@@ -46,3 +46,13 @@ require('catppuccin').setup()
 vim.g.catppuccin_flavour = "mocha" -- latte, frappe, macchiato, mocha
 vim.cmd[[colorscheme catppuccin]]
 
+-- LSP
+require('mason').setup()
+require('mason-lspconfig').setup{
+	ensure_installed = {
+		"sumneko_lua",
+		"clangd",
+		"rust_analyzer"
+	}
+}
+

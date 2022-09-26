@@ -62,7 +62,14 @@ return packer.startup{function()
 	}
 
 	-- LSP
+	use 'williamboman/mason.nvim'
+	use 'williamboman/mason-lspconfig.nvim'
 	use 'neovim/nvim-lspconfig'
+	use {
+		'L3MON4D3/LuaSnip',
+		tag = 'v<CurrentMajor>.*'
+	}
+	-- use 'hrsh7h/cmp-'
 
 	-- Catppuccin
 	use {
