@@ -1,6 +1,3 @@
--- require 'lspconfig'.pyright.setup{}
--- require 'lspconfig'.clangds.setup{}
-
 local keymap = vim.api.nvim_set_keymap
 
 local opts = {
@@ -21,8 +18,6 @@ keymap('n', '<C-S-Up>', '<cmd>echo "c s up"<CR>', opts);
 -- TODO
 -- Mouse back => <C-o>
 -- Mouse forward => <C-i>
-keymap('n', '<X1Mouse>', '<cmd>echo "left"<CR>', opts);
-keymap('n', '<X2Mouse>', '<cmd>echo "right"<CR>', opts);
-
-
+-- keymap('n', '<X1Mouse>', '<cmd>echo "left"<CR>', opts);
+-- keymap('n', '<X2Mouse>', '<cmd>echo "right"<CR>', opts);
 
