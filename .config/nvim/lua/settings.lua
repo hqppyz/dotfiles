@@ -56,3 +56,11 @@ require('mason-lspconfig').setup{
 	}
 }
 
+-- Navigation
+require('nvim-tree').setup()
+
+-- File
+vim.opt.selection = "exclusive"
+vim.opt.selectmode = "mouse,key"
+vim.opt.keymodel = "startsel,stopsel"
+

@@ -79,5 +79,14 @@ return packer.startup{function()
 
 	-- MIPS
 	use 'harenome/vim-mipssyntax'
+
+	-- Navigator
+	use {
+		'kyazdani42/nvim-tree.lua',
+		requires = {
+			'kyazdani42/nvim-web-devicons'
+		},
+		tag = 'nightly'
+	}
 end}
 
