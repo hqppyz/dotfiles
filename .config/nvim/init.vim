@@ -6,6 +6,7 @@ require('plugins')
 require('settings')
 require('mappings')
 require('lsp')
+require('completion')
 
 print('Greetings, children.')
 EOF
