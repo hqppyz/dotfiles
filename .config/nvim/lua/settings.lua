@@ -60,7 +60,8 @@ require('mason-lspconfig').setup{
 require('nvim-tree').setup()
 
 -- File
-vim.opt.selection = "exclusive"
-vim.opt.selectmode = "mouse,key"
-vim.opt.keymodel = "startsel,stopsel"
+-- TODO: maybe not, causes problems with C-S-{arrows} and such
+vim.opt.selection = 'exclusive'
+vim.opt.selectmode = 'mouse,key'
+vim.opt.keymodel = 'startsel,stopsel'
 

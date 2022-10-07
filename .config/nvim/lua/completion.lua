@@ -1,9 +1,5 @@
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 
-vim.opt.
-
-
-
 vim.opt.shortmess:append 'c'
 
 -- local lspkind = require 'lspkind'

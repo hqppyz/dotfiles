@@ -29,7 +29,7 @@ keymap('n', '<C-Up>', '<C-w>k', opts());
 keymap('n', '<C-Right>', '<C-w>l', opts());
 
 -- Line moving
-keymap('n', '<C-S-Up>', '<cmd>echo "c s up"<CR>', opts());
+--keymap('i', '<C-S-Up>', '<cmd>echo "c s up"<CR>', opts());
 
 -- TODO
 -- Mouse back => <C-o>
