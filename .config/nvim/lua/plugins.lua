@@ -79,7 +79,7 @@ return packer.startup{function()
 	use 'hrsh7th/cmp-nvim-lsp-document-symbol'
 	use 'saadparwaiz1/cmp_luasnip'
 	use 'tamago324/cmp-zsh'
-	use 'onsails/lspkind'
+	use 'onsails/lspkind.nvim'
 
 	-- Catppuccin
 	use {
