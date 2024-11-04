@@ -1,0 +1,5 @@
+#!/bin/bash
+
+percentage=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep "percentage" | grep -Eo "[0-9]{1,3}")
+symbol=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep "state" | awk '{print ($2 == "charging") ? "#" : "%"}')
+echo "${percentage}${symbol}"
