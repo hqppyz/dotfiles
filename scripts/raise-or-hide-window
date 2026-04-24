@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+source require-x11
+
+set -u
+
+STATE_FILE="/tmp/minimized-stack-$USER"
+
+window_exists() {
+    xprop -id "$1" WM_CLASS >/dev/null 2>&1
+}
+
+is_hidden() {
+    xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -q '_NET_WM_STATE_HIDDEN'
+}
+
+get_label() {
+    local id=$1 label
+
+    label=$(xprop -id "$id" WM_CLASS 2>/dev/null |
+        sed -n 's/^WM_CLASS(STRING) = //p')
+    [[ -n $label ]] && { printf '%s\n' "$label"; return; }
+
+    label=$(xprop -id "$id" _NET_WM_NAME 2>/dev/null |
+        sed -n 's/^_NET_WM_NAME(UTF8_STRING) = //p')
+    [[ -n $label ]] && { printf '%s\n' "$label"; return; }
+
+    label=$(xprop -id "$id" WM_NAME 2>/dev/null |
+        sed -n 's/^WM_NAME(STRING) = //p')
+    [[ -n $label ]] && { printf '%s\n' "$label"; return; }
+
+    printf '<unknown>\n'
+}
+
+push_window() {
+    local id=$1
+
+    touch "$STATE_FILE"
+
+    if [[ -s $STATE_FILE ]] && tail -n 1 "$STATE_FILE" 2>/dev/null | grep -qxF "$id"; then
+        return
+    fi
+
+    printf '%s\n' "$id" >> "$STATE_FILE"
+}
+
+raise_from_stack() {
+    local id
+    local -a ids
+
+    touch "$STATE_FILE"
+    mapfile -t ids < "$STATE_FILE"
+
+    for (( i=${#ids[@]}-1; i>=0; i-- )); do
+        id=${ids[i]}
+
+        window_exists "$id" || continue
+        is_hidden "$id" || continue
+
+        wmctrl -i -R "$id" >/dev/null 2>&1 || continue
+
+        for (( j=0; j<i; j++ )); do
+            printf '%s\n' "${ids[j]}"
+        done > "$STATE_FILE"
+
+        return 0
+    done
+
+    : > "$STATE_FILE"
+    return 1
+}
+
+minimize_active() {
+    local id
+
+    id=$(xdotool getactivewindow 2>/dev/null) || exit 1
+    [[ -n $id ]] || exit 1
+
+    id=$(printf '0x%x\n' "$id")
+
+    push_window "$id"
+    wmctrl -i -r "$id" -b add,hidden >/dev/null 2>&1
+}
+
+list_stack() {
+    local id status label
+    local -a ids
+
+    touch "$STATE_FILE"
+    mapfile -t ids < "$STATE_FILE"
+
+    if (( ${#ids[@]} == 0 )); then
+        echo "[stack empty]"
+    else
+        for (( i=${#ids[@]}-1; i>=0; i-- )); do
+            id=${ids[i]}
+
+            if ! window_exists "$id"; then
+                status="dead"
+            elif is_hidden "$id"; then
+                status="ok"
+            else
+                status="visible"
+            fi
+
+            label=$(get_label "$id")
+            printf '%s | %s | %s\n' "$id" "$status" "$label"
+        done
+    fi
+
+    echo "--- fallback ---"
+    raise-hidden-window --list 2>/dev/null
+}
+
+case "${1-}" in
+    --minimize)
+        minimize_active
+        ;;
+    --raise)
+        raise_from_stack || raise-hidden-window
+        ;;
+    --list)
+        list_stack
+        ;;
+    *)
+        printf 'Usage: %s --minimize | --raise | --list\n' "$0" >&2
+        exit 1
+        ;;
+esac

@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+source require-x11
+
+list_mode=0
+[[ ${1-} == "--list" ]] && list_mode=1
+
+get_time() {
+    local id=$1 t ref
+
+    t=$(xprop -id "$id" _NET_WM_USER_TIME 2>/dev/null |
+        awk -F' = ' '/_NET_WM_USER_TIME/ {print $2}')
+    if [[ $t =~ ^[0-9]+$ ]]; then
+        printf '%s|window\n' "$t"
+        return
+    fi
+
+    ref=$(xprop -id "$id" _NET_WM_USER_TIME_WINDOW 2>/dev/null |
+        awk -F'# ' '/_NET_WM_USER_TIME_WINDOW/ {print $2}')
+    if [[ $ref =~ ^0x[0-9a-fA-F]+$ ]]; then
+        t=$(xprop -id "$ref" _NET_WM_USER_TIME 2>/dev/null |
+            awk -F' = ' '/_NET_WM_USER_TIME/ {print $2}')
+        if [[ $t =~ ^[0-9]+$ ]]; then
+            printf '%s|time-window\n' "$t"
+            return
+        fi
+    fi
+
+    printf '0|none\n'
+}
+
+get_label() {
+    local id=$1 label
+
+    label=$(xprop -id "$id" WM_CLASS 2>/dev/null |
+        sed -n 's/^WM_CLASS(STRING) = //p')
+    [[ -n $label ]] && { printf '%s\n' "$label"; return; }
+
+    label=$(xprop -id "$id" _NET_WM_NAME 2>/dev/null |
+        sed -n 's/^_NET_WM_NAME(UTF8_STRING) = //p')
+    [[ -n $label ]] && { printf '%s\n' "$label"; return; }
+
+    label=$(xprop -id "$id" WM_NAME 2>/dev/null |
+        sed -n 's/^WM_NAME(STRING) = //p')
+    [[ -n $label ]] && { printf '%s\n' "$label"; return; }
+
+    printf '<unknown>\n'
+}
+
+best_id=
+best_time=-1
+fallback_id=
+
+while read -r id; do
+    state=$(xprop -id "$id" _NET_WM_STATE 2>/dev/null) || continue
+    [[ $state == *"_NET_WM_STATE_HIDDEN"* ]] || continue
+
+    [[ -z $fallback_id ]] && fallback_id=$id
+
+    IFS='|' read -r t source < <(get_time "$id")
+
+    if (( list_mode )); then
+        label=$(get_label "$id")
+        printf '%s | %s | %s | %s\n' "$id" "$t" "$source" "$label"
+    fi
+
+    if (( t > best_time )); then
+        best_time=$t
+        best_id=$id
+    fi
+done < <(
+    xprop -root _NET_CLIENT_LIST_STACKING 2>/dev/null |
+    sed 's/^.*# //' |
+    tr ',' '\n' |
+    tr -d ' '
+)
+
+if (( ! list_mode )); then
+    wmctrl -i -R "${best_id:-$fallback_id}" 2>/dev/null
+fi
