@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export DOTFOLDER="/opt/dotfiles"
-export PATH="$PATH:/opt/dotfiles/scripts"
+export PATH="$PATH:$DOTFOLDER/scripts"
 
 export HISTCONTROL=ignoreboth:erasedups
 export LESSHISTFILE=- # Disable creation of .lesshst

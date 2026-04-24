@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-export C_BLUE=$'\e[1;34m'
-export C_GREEN=$'\e[1;32m'
-export C_YELLOW=$'\e[1;33m'
-export C_MAGENTA=$'\e[1;35m'
-export C_RED=$'\e[1;31m'
 export C_RESET=$'\e[0m'
+export C_BLACK=$'\e[0;30m'
+export C_RED=$'\e[0;31m'
+export C_GREEN=$'\e[0;32m'
+export C_BROWN=$'\e[0;33m'
+export C_BLUE=$'\e[0;34m'
+export C_PURPLE=$'\e[0;35m'
+export C_CYAN=$'\e[0;36m'
+export C_LIGHTGRAY=$'\e[0;37m'
+export C_WHITE=$'\e[97m'
