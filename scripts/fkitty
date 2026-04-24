@@ -1,3 +1,0 @@
-#!/bin/sh
-
-kitty --class FKitty --config /home/marco/.config/kitty/fkitty.conf
