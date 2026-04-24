@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
-
 export DOTFOLDER="/opt/dotfiles"
 export PATH="$PATH:$DOTFOLDER/scripts"
+export XDG_CONFIG_DIRS="$XDG_CONFIG_DIRS:$DOTFOLDER/system"
 
 export HISTCONTROL=ignoreboth:erasedups
 export LESSHISTFILE=- # Disable creation of .lesshst

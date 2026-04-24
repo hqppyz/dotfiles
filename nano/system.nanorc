@@ -1,0 +1,37 @@
+include /usr/share/nano/*.nanorc
+include /usr/share/nano/extra/*.nanorc
+
+set nonewlines # as cool as it sounds I dont want unnoticeable diff
+
+set autoindent
+set tabsize 2
+set tabstospaces
+extendsyntax makefile tabgives " "
+
+set linenumbers
+set mouse
+set softwrap
+set atblanks
+set zap
+set minibar
+set indicator
+#set nohelp
+set magic
+set constantshow
+
+set titlecolor bold,black,latte
+set statuscolor bold,black,latte
+set errorcolor bold,lightwhite,red
+set selectedcolor lightwhite,slate
+set stripecolor ,latte
+set scrollercolor latte
+set numbercolor latte
+set keycolor latte
+set functioncolor lightwhite
+set minicolor bold,black,latte
+set promptcolor bold,black,latte
+
+unbind ^_ main
+bind ^_ comment main
+bind M-b prevword main
+bind M-f nextword main
