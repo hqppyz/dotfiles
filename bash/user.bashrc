@@ -11,9 +11,9 @@ source require-colors
 PROMPT_COMMAND='build_prompt'
 build_prompt() {
   local exit_code=$?
-  local exit_color="${C_CYAN}"
+  local exit_color="${SC_CYAN}"
   if [ "$exit_code" -ne 0 ]; then
-    exit_color="${C_RED}"
+    exit_color="${SC_RED}"
   fi
 
   # local background_color="${C_RED_BG}"
@@ -26,22 +26,22 @@ build_prompt() {
   if git rev-parse --is-inside-work-tree &>/dev/null; then
     local repository_branch=$(basename $(git rev-parse --show-toplevel))
     local repository_name=$(git rev-parse --abbrev-ref HEAD)
-    repository="${C_GREEN}[$repository_branch@$repository_name] "
+    repository="${SC_GREEN}[$repository_branch@$repository_name] "
 
     if git ls-files --others --exclude-standard --directory | grep -q .; then
       # Untracked files
-      changes_star="${C_RED}*"
+      changes_star="${SC_RED}*"
     elif ! git diff --quiet || ! git diff --cached --quiet; then
       # Uncommitted changes
-      changes_star="${C_GREEN}*"
+      changes_star="${SC_GREEN}*"
     fi
   fi
 
-  PS1="$repository${C_PURPLE}\W$changes_star $exit_color> ${C_WHITE}"
-  #local left_prompt="${C_PURPLE}\W$changes_star $exit_color> ${C_WHITE}"
+  PS1="$repository${SC_PURPLE}\W$changes_star $exit_color> ${SC_WHITE}"
+  #local left_prompt="${SC_PURPLE}\W$changes_star $exit_color> ${SC_WHITE}"
   #local right_prompt="$repository"
   #PS1=$(printf "%*s\r%s\n" "$(($(tput cols) + 10))" "$right_prompt" "$left_prompt")
 }
 
 #PS1="\[\e[31m\]\w \$(if [ \$? == 0 ]; then echo \[\e[92m\]; fi)> \[\e[97m\]"
-PS2="${C_CYAN}> ${C_WHITE}"
+PS2="${SC_CYAN}> ${SC_WHITE}"

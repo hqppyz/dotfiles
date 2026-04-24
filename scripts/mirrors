@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+
+source require-arch
+source require-colors
+
+set -eu
+
+RANK_COUNT=6
+LATEST_COUNT=100
+#PROTOCOL=http,https,rsync
+PROTOCOL=http,https
+
+MIRROR=arch
+ARCH_MIRRORLIST=/etc/pacman.d/mirrorlist
+[ "$is_artix" = true ] && {
+  MIRROR=both
+  ARCH_MIRRORLIST=/etc/pacman.d/mirrorlist-arch
+}
+
+usage() {
+  printf "${C_RED}Usage: $(basename "$0") update [-m artix|arch|both] [-n RANK_COUNT] [-l LATEST_COUNT] [-p PROTOCOL] | $(basename "$0") clean${C_RESET}\n" >&2
+}
+
+epoch_to_timestamp() {
+  epoch="$1"
+  date -d "@$epoch" '+%Y%m%d%H%M%S'
+}
+
+update() {
+  path="$1"
+  url="$2"
+  current_timestamp="$(date '+%Y%m%d%H%M%S')"
+  current_path="${path}-${current_timestamp}"
+
+  if ! sudo reflector \
+    --protocol "$PROTOCOL" \
+    --latest "$LATEST_COUNT" \
+    -n "$RANK_COUNT" \
+    --sort rate \
+    --url "$url" \
+    --save "$current_path"; then
+    return 1
+  fi
+
+  if ! sudo test -s "$current_path"; then
+    echo "reflector did not create a valid mirrorlist: $current_path" >&2
+    return 1
+  fi
+
+  if [ -e "$path" ]; then
+    previous_timestamp="$(epoch_to_timestamp "$(stat -c '%Y' "$path")")"
+    previous_path="${path}-${previous_timestamp}.old"
+    sudo mv "$path" "$previous_path"
+  fi
+
+  sudo mv "$current_path" "$path"
+}
+
+if [ "$#" -eq 0 ]; then
+  usage
+  exit 1
+fi
+
+command="$1"
+shift
+
+case "$command" in
+  update)
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        -n)
+          [ "$#" -ge 2 ] || {
+            usage
+            exit 1
+          }
+          RANK_COUNT="$2"
+          shift 2
+          ;;
+        -l)
+          [ "$#" -ge 2 ] || {
+            usage
+            exit 1
+          }
+          LATEST_COUNT="$2"
+          shift 2
+          ;;
+        -m)
+          [ "$#" -ge 2 ] || {
+            usage
+            exit 1
+          }
+          case "$2" in
+            arch)
+              ;;
+            artix|both)
+              [ "$is_artix" = true ] || {
+                usage
+                exit 1
+              }
+              ;;
+            *)
+              usage
+              exit 1
+              ;;
+          esac
+          MIRROR="$2"
+          shift 2
+          ;;
+        -p)
+          [ "$#" -ge 2 ] || {
+            usage
+            exit 1
+          }
+          PROTOCOL="$2"
+          shift 2
+          ;;
+        *)
+          usage
+          exit 1
+          ;;
+      esac
+    done
+
+    if [ "$MIRROR" = "artix" ] || [ "$MIRROR" = "both" ]; then
+      printf "%sRanking Artix mirrorlist\n" "$C_CYAN"
+      update "/etc/pacman.d/mirrorlist" "https://status.artixlinux.org/mirrors/status/json/"
+      printf "%s" "$C_RESET"
+    fi
+
+    if [ "$MIRROR" = "arch" ] || [ "$MIRROR" = "both" ]; then
+      printf "%sRanking Arch mirrorlist\n" "$C_PURPLE"
+      update "$ARCH_MIRRORLIST" "https://archlinux.org/mirrors/status/json/"
+      printf "%s" "$C_RESET"
+    fi
+    ;;
+  clean)
+    [ "$#" -eq 0 ] || {
+      usage
+      exit 1
+    }
+    sudo find /etc/pacman.d -maxdepth 1 -type f -name 'mirrorlist-*.old' -delete
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

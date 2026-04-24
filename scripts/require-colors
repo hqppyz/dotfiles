@@ -1,12 +1,31 @@
 #!/usr/bin/env bash
 
-export C_RESET=$'\e[0m'
-export C_BLACK=$'\e[0;30m'
-export C_RED=$'\e[0;31m'
-export C_GREEN=$'\e[0;32m'
-export C_BROWN=$'\e[0;33m'
-export C_BLUE=$'\e[0;34m'
-export C_PURPLE=$'\e[0;35m'
-export C_CYAN=$'\e[0;36m'
-export C_LIGHTGRAY=$'\e[0;37m'
-export C_WHITE=$'\e[97m'
+export  C_RESET=$'\e[0m'
+export SC_RESET='\['"${C_RESET}"'\]'
+
+export  C_BLACK=$'\e[0;30m'
+export SC_BLACK='\['"${C_BLACK}"'\]'
+
+export  C_RED=$'\e[0;31m'
+export SC_RED='\['"${C_RED}"'\]'
+
+export  C_GREEN=$'\e[0;32m'
+export SC_GREEN='\['"${C_GREEN}"'\]'
+
+export  C_BROWN=$'\e[0;33m'
+export SC_BROWN='\['"${C_BROWN}"'\]'
+
+export  C_BLUE=$'\e[0;34m'
+export SC_BLUE='\['"${C_BLUE}"'\]'
+
+export  C_PURPLE=$'\e[0;35m'
+export SC_PURPLE='\['"${C_PURPLE}"'\]'
+
+export  C_CYAN=$'\e[0;36m'
+export SC_CYAN='\['"${C_CYAN}"'\]'
+
+export  C_LIGHTGRAY=$'\e[0;37m'
+export SC_LIGHTGRAY='\['"${C_LIGHTGRAY}"'\]'
+
+export  C_WHITE=$'\e[97m'
+export SC_WHITE='\['"${C_WHITE}"'\]'

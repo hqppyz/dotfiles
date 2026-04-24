@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+source require-colors
+
+if [ ! -r /etc/os-release ]; then
+    echo "${C_RED}ERROR: Could not determine the current operating system.${C_RESET}" >&2
+    exit 1
+fi
+
+. /etc/os-release
+
+export is_artix=false
+if [ "${ID:-}" = "artix" ]; then
+    export is_artix=true
+fi
+
+if [ "${ID:-}" != "arch" ] && [[ " ${ID_LIKE:-} " != *" arch "* ]] && [ ! -e /etc/arch-release ]; then
+    echo "${C_RED}ERROR: This script must be run on arch-based systems.${C_RESET}" >&2
+    exit 1
+fi
