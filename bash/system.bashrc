@@ -1,5 +1,6 @@
 shopt -s autocd # Use folders name as implicit cd
 
+alias sudo="sudo "
 alias nano="nano --rcfile $DOTFOLDER/nanorc"
 
 # Exclude root
