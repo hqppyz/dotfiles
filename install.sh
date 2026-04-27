@@ -17,7 +17,7 @@ if [[ -z "$DOTFOLDER" ]]; then
    exit 1
 fi
 
-echo "${C_BLUE}Giving everybody reading partial rights to $DOTFOLDER${C_RESET}"
+echo "${C_BLUE}Giving everybody partial rights to $DOTFOLDER${C_RESET}"
 "$DRY_RUN" || {
   chmod -R a+r "$DOTFOLDER"
   chmod -R a+X "$DOTFOLDER/scripts"
@@ -38,9 +38,7 @@ append_dotfile() {
   local target="$1"
   local src="$DOTFOLDER/$2"
   local fmt="$3"
-  local line
-
-  line="$(printf "$fmt" "$src" "$src") # Appended by dotfiles"
+  local line="$(printf "$fmt" "$src" "$src") # Appended by dotfiles"
 
   echo "${C_BLUE}Appending $src to $target${C_RESET}"
   "$DRY_RUN" || printf '\n%s' "$line" >> "$target"
@@ -51,13 +49,8 @@ append_dotfile "/etc/profile" "profile/system.profile" "$BASH_INCLUDE"
 append_dotfile "/etc/profile" "profile/user.profile" "$BASH_INCLUDE"
 prepend_dotfile "/etc/bash/bashrc" "bash/system.bashrc" "$BASH_INCLUDE"
 prepend_dotfile "/etc/bash/bashrc" "bash/user.bashrc" "$BASH_INCLUDE"
-unset BASH_INCLUDE
 
 INPUTRC_INCLUDE='$include %s'
 append_dotfile "/etc/inputrc" "inputrc" "$INPUTRC_INCLUDE"
-unset INPUTRC_INCLUDE
-
-unset -f prepend_dotfile
-unset -f append_dotfile
 
 echo "${C_GREEN}Success!${C_RESET}"
