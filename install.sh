@@ -90,8 +90,8 @@ append_dotfile() {
 }
 
 BASH_INCLUDE='[ -r "%s" ] && . "%s"'
-append_dotfile "/etc/profile" -- "profile/system.profile" "$BASH_INCLUDE"
-append_dotfile "/etc/profile" -- "profile/user.profile" "$BASH_INCLUDE"
+prepend_dotfile "/etc/profile" -- "profile/user.profile" "$BASH_INCLUDE"
+prepend_dotfile "/etc/profile" -- "profile/system.profile" "$BASH_INCLUDE"
 prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/user.bashrc" "$BASH_INCLUDE"
 prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/system.bashrc" "$BASH_INCLUDE"
 
