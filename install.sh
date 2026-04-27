@@ -23,10 +23,6 @@ echo "${C_BLUE}Giving everybody partial rights to $DOTFOLDER${C_RESET}"
   chmod -R a+X "$DOTFOLDER/scripts"
 }
 
-escape() {
-  printf '%s' "$1" | sed 's/[.[\*^$()+?{}|\\]/\\&/g'
-}
-
 resolve_dotfile_target() {
   local candidates=()
   local candidate
@@ -61,13 +57,16 @@ prepend_dotfile() {
 
   local src="$DOTFOLDER/$1"
   local fmt="$2"
-  local line="$(printf "$fmt" "$src" "$src") # Prepended by dotfiles ($DOTFILES_VER)"
-  src="$(escape "$src")"
+  local marker="# Prepended by dotfiles [$DOTFILES_VER]"
+  local marker_pattern="# Prepended by dotfiles \\[.*\\]$"
+  local line="$(printf "$fmt" "$src" "$src") $marker"
+
+  grep -Fq "$marker" "$target" && return 0
 
   echo "${C_BLUE}Prepending $DOTFOLDER/$1 to $target${C_RESET}"
   "$DRY_RUN" || {
     sed -i \
-      -e "\|$src.*# Prepended by dotfiles (.*)$|d" \
+      -e "\|$marker_pattern|d" \
       "$target"
     sed -i "1i\\
 $line" "$target"
@@ -91,27 +90,27 @@ append_dotfile() {
 
   local src="$DOTFOLDER/$1"
   local fmt="$2"
-  local line="$(printf "$fmt" "$src" "$src") # Appended by dotfiles ($DOTFILES_VER)"
-  src="$(escape "$src")"
+  local marker="# Appended by dotfiles [$DOTFILES_VER]"
+  local marker_pattern="# Appended by dotfiles \\[.*\\]$"
+  local line="$(printf "$fmt" "$src" "$src") $marker"
+
+  grep -Fq "$marker" "$target" && return 0
 
   echo "${C_BLUE}Appending $DOTFOLDER/$1 to $target${C_RESET}"
   "$DRY_RUN" || {
     local replaced=false
-    grep -q "$src.*# Appended by dotfiles (.*)$" "$target" && replaced=true
+    grep -q "$marker_pattern" "$target" && replaced=true
     sed -i \
-      -e "\|$src.*# Appended by dotfiles (.*)$|d" \
+      -e "\|$marker_pattern|d" \
       "$target"
-    "$replaced" && [[ -s "$target" ]] && truncate -s -1 "$target"
-    printf '\n%s' "$line" >> "$target"
+    "$replaced" && printf '%s' "$line" >> "$target" || printf '\n%s' "$line" >> "$target"
   }
 
   return 0
 }
 
 BASH_INCLUDE='[ -r "%s" ] && . "%s"'
-prepend_dotfile "/etc/profile" -- "profile/user.profile" "$BASH_INCLUDE"
 prepend_dotfile "/etc/profile" -- "profile/system.profile" "$BASH_INCLUDE"
-prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/user.bashrc" "$BASH_INCLUDE"
 prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/system.bashrc" "$BASH_INCLUDE"
 
 INPUTRC_INCLUDE='$include %s'

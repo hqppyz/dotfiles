@@ -1,11 +1,6 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-# Exclude root
-if [[ -z "$EUID" || "$EUID" -eq 0 ]]; then
-  return 0
-fi
-
 source require-colors
 
 PROMPT_COMMAND='build_prompt'
