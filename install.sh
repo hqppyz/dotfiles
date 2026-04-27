@@ -23,6 +23,10 @@ echo "${C_BLUE}Giving everybody partial rights to $DOTFOLDER${C_RESET}"
   chmod -R a+X "$DOTFOLDER/scripts"
 }
 
+escape() {
+  printf '%s' "$1" | sed 's/[.[\*^$()+?{}|\\]/\\&/g'
+}
+
 resolve_dotfile_target() {
   local candidates=()
   local candidate
@@ -57,11 +61,17 @@ prepend_dotfile() {
 
   local src="$DOTFOLDER/$1"
   local fmt="$2"
-  local line="$(printf "$fmt" "$src" "$src") # Prepended by dotfiles"
+  local line="$(printf "$fmt" "$src" "$src") # Prepended by dotfiles ($DOTFILES_VER)"
+  src="$(escape "$src")"
 
-  echo "${C_BLUE}Prepending $src to $target${C_RESET}"
-  "$DRY_RUN" || sed -i "1i\\
+  echo "${C_BLUE}Prepending $DOTFOLDER/$1 to $target${C_RESET}"
+  "$DRY_RUN" || {
+    sed -i \
+      -e "\|$src.*# Prepended by dotfiles (.*)$|d" \
+      "$target"
+    sed -i "1i\\
 $line" "$target"
+  }
 
   return 0
 }
@@ -81,10 +91,19 @@ append_dotfile() {
 
   local src="$DOTFOLDER/$1"
   local fmt="$2"
-  local line="$(printf "$fmt" "$src" "$src") # Appended by dotfiles"
+  local line="$(printf "$fmt" "$src" "$src") # Appended by dotfiles ($DOTFILES_VER)"
+  src="$(escape "$src")"
 
-  echo "${C_BLUE}Appending $src to $target${C_RESET}"
-  "$DRY_RUN" || printf '\n%s' "$line" >> "$target"
+  echo "${C_BLUE}Appending $DOTFOLDER/$1 to $target${C_RESET}"
+  "$DRY_RUN" || {
+    local replaced=false
+    grep -q "$src.*# Appended by dotfiles (.*)$" "$target" && replaced=true
+    sed -i \
+      -e "\|$src.*# Appended by dotfiles (.*)$|d" \
+      "$target"
+    "$replaced" && [[ -s "$target" ]] && truncate -s -1 "$target"
+    printf '\n%s' "$line" >> "$target"
+  }
 
   return 0
 }
