@@ -2,7 +2,7 @@ shopt -s autocd # Use folders name as implicit cd
 
 alias sudo="sudo "
 alias nano="nano --rcfile $DOTFOLDER/nanorc"
-alias update-dotfolder="sudo bash $DOTFOLDER/update.sh"
+alias update-dotfolder="bash $DOTFOLDER/update.sh"
 
 # Exclude root
 if [[ -n "$EUID" && "$EUID" -ne 0 ]]; then

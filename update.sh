@@ -3,7 +3,6 @@
 echo "Sourcing dependencies..."
 WORKDOTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$WORKDOTDIR/scripts/require-dotfolder"
-source require-sudo
 source require-colors
 
 # Changing the directory to DOTFOLDER
@@ -23,6 +22,6 @@ git pull --ff-only origin master
 
 # Run install.sh
 echo "${C_BLUE}Running installer...${C_RESET}"
-bash install.sh
+sudo bash install.sh
 
 echo "${C_GREEN}Update successful!${C_RESET}"
