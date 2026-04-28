@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+WORKDOTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+unset DOTFOLDER
+source "$WORKDOTDIR/profile/system.profile"
+unset WORKDOTDIR
+
+source require-colors
+
+if [[ -z "$DOTFOLDER" ]]; then
+   echo "${C_RED}ERROR: Could not find DOTFOLDER${C_RESET}"
+   exit 1
+fi

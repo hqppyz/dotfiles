@@ -7,15 +7,10 @@ if [[ "$1" == "--dry" ]]; then
 fi
 
 echo "Sourcing dependencies..."
-unset DOTFOLDER
-source profile/system.profile
+WORKDOTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$WORKDOTDIR/scripts/require-dotfolder"
 source require-sudo
 source require-colors
-
-if [[ -z "$DOTFOLDER" ]]; then
-   echo "${C_RED}ERROR: Could not find DOTFOLDER${C_RESET}"
-   exit 1
-fi
 
 echo "${C_BLUE}Giving everybody partial rights to $DOTFOLDER${C_RESET}"
 "$DRY_RUN" || {
@@ -116,4 +111,4 @@ prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/sys
 INPUTRC_INCLUDE='$include %s'
 append_dotfile "/etc/inputrc" -- "inputrc" "$INPUTRC_INCLUDE"
 
-echo "${C_GREEN}Success!${C_RESET}"
+echo "${C_GREEN}Installation successful!${C_RESET}"
