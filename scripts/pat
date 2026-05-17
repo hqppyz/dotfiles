@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+source require-colors
+
+for file in "$@"; do
+  [[ -f "$file" ]] || continue
+
+  echo "$file:"
+  cat "$file"
+
+  if [[ -s "$file" && $(tail -c 1 "$file") != $'\n' ]]; then
+    echo
+  fi
+
+#  echo "${C_RED}Skipping $file${C_RESET}" >&2
+done
