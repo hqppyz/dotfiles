@@ -64,6 +64,18 @@ reset_text() {
   fi
 }
 
+if [[ -z "$CHATGPT_CODEX_AUTH" || $1 == "--disable" ]]; then
+  echo -e "$(icon_text "$WAIT_WEEK_ICON" " DISABLED")"
+
+  [[ -z "$CHATGPT_CODEX_AUTH" ]] && {
+    echo "<tool>TOKEN MISSING</tool>"
+    exit 1
+  }
+
+  echo "<tool>SCRIPT DISABLED</tool>"
+  exit 0;
+fi
+
 if ! DATA=$(curl -sSf "$API" -H "authorization: Bearer $CHATGPT_CODEX_AUTH" 2>&1); then
   echo -e "$(icon_text "$NO_CONNECTION_ICON" "???%/???%")"
   echo "<tool>$DATA</tool>"

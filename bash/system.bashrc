@@ -1,4 +1,4 @@
-shopt -s autocd # Use folders name as implicit cd
+#shopt -s autocd # Use folders name as implicit cd
 
 alias sudo="sudo "
 alias update-dotfolder="bash $DOTFOLDER/update.sh"
