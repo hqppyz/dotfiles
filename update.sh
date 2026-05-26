@@ -8,6 +8,9 @@ source require-colors
 # Changing the directory to DOTFOLDER
 cd "$DOTFOLDER"
 
+# Check if the update is being run by the owner of the DOTFOLDER
+source require-owner .
+
 # Check if there are mods in the folder
 if ! git diff --quiet --exit-code || ! git diff --cached --quiet --exit-code; then
   echo "${C_RED}ERROR: Refusing to update because $DOTFOLDER has local changes.${C_RESET}" >&2

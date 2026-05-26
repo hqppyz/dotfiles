@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+source require-colors
+
+if [[ $# -ne 1 ]]; then
+  echo "${C_RED}ERROR: Expected exactly one path argument.${C_RESET}" >&2
+  echo "${C_RED}TRY: source require-owner /path/to/dir${C_RESET}" >&2
+  exit 1
+fi
+
+if [[ ! -e "$1" ]]; then
+  echo "${C_RED}ERROR: Path does not exist: $target_path${C_RESET}" >&2
+  exit 1
+fi
+
+if [[ "$(stat -c '%u' "$1")" != "$(id -u)" ]]; then
+  echo "${C_RED}ERROR: Refusing to continue because you are not the owner of $(realpath $1).${C_RESET}" >&2
+  exit 1
+fi
