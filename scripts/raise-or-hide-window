@@ -4,17 +4,54 @@ source require-x11
 
 set -u
 
+ACTION=
+WORKSPACE=
 STATE_FILE="/tmp/minimized-stack-$USER"
 
-window_exists() {
-    xprop -id "$1" WM_CLASS >/dev/null 2>&1
+raise_fallback() {
+    if [[ -n $WORKSPACE ]]; then
+        raise-hidden-window --workspace "$@"
+    else
+        raise-hidden-window "$@"
+    fi
 }
 
-is_hidden() {
+current_workspace() {
+    local ws
+
+    ws=$(xprop -root _NET_CURRENT_DESKTOP 2>/dev/null |
+        awk -F' = ' '/_NET_CURRENT_DESKTOP/ {print $2; exit}')
+
+    [[ $ws =~ ^[0-9]+$ ]] || return 1
+    printf '%s\n' "$ws"
+}
+
+window_workspace() {
+    local id=$1 ws
+
+    ws=$(xprop -id "$id" _NET_WM_DESKTOP 2>/dev/null |
+        awk -F' = ' '/_NET_WM_DESKTOP/ {print $2; exit}')
+
+    [[ $ws =~ ^[0-9]+$ || $ws =~ ^0x[0-9a-fA-F]+$ ]] || return 1
+    printf '%s\n' "$ws"
+}
+
+window_exists() {
+    local id=$1 ws
+
+    xprop -id "$id" WM_CLASS >/dev/null 2>&1 || return 1
+
+    [[ -z $WORKSPACE ]] && return 0
+
+    ws=$(window_workspace "$id") || return 1
+    [[ $ws == "$WORKSPACE" ]]
+}
+
+window_hidden() {
     xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -q '_NET_WM_STATE_HIDDEN'
 }
 
-get_label() {
+window_label() {
     local id=$1 label
 
     label=$(xprop -id "$id" WM_CLASS 2>/dev/null |
@@ -32,18 +69,6 @@ get_label() {
     printf '<unknown>\n'
 }
 
-push_window() {
-    local id=$1
-
-    touch "$STATE_FILE"
-
-    if [[ -s $STATE_FILE ]] && tail -n 1 "$STATE_FILE" 2>/dev/null | grep -qxF "$id"; then
-        return
-    fi
-
-    printf '%s\n' "$id" >> "$STATE_FILE"
-}
-
 raise_from_stack() {
     local id
     local -a ids
@@ -55,7 +80,7 @@ raise_from_stack() {
         id=${ids[i]}
 
         window_exists "$id" || continue
-        is_hidden "$id" || continue
+        window_hidden "$id" || continue
 
         wmctrl -i -R "$id" >/dev/null 2>&1 || continue
 
@@ -70,7 +95,7 @@ raise_from_stack() {
     return 1
 }
 
-minimize_active() {
+hide_active() {
     local id
 
     id=$(xdotool getactivewindow 2>/dev/null) || exit 1
@@ -78,7 +103,14 @@ minimize_active() {
 
     id=$(printf '0x%x\n' "$id")
 
-    push_window "$id"
+    # Register into stack
+    touch "$STATE_FILE"
+    if [[ -s $STATE_FILE ]] && tail -n 1 "$STATE_FILE" 2>/dev/null | grep -qxF "$id"; then
+        return
+    fi
+    printf '%s\n' "$id" >> "$STATE_FILE"
+
+    # Hide
     wmctrl -i -r "$id" -b add,hidden >/dev/null 2>&1
 }
 
@@ -97,33 +129,61 @@ list_stack() {
 
             if ! window_exists "$id"; then
                 status="dead"
-            elif is_hidden "$id"; then
+            elif window_hidden "$id"; then
                 status="ok"
             else
                 status="visible"
             fi
 
-            label=$(get_label "$id")
+            label=$(window_label "$id")
             printf '%s | %s | %s\n' "$id" "$status" "$label"
         done
     fi
 
     echo "--- fallback ---"
-    raise-hidden-window --list 2>/dev/null
+    raise_fallback --list 2>/dev/null
 }
 
-case "${1-}" in
-    --minimize)
-        minimize_active
+while (( $# )); do
+    case "$1" in
+        --workspace)
+            WORKSPACE=$(current_workspace) || {
+                echo "ERROR: Could not retrieve current workspace." >&2
+                exit 1
+            }
+            STATE_FILE="${STATE_FILE}-ws-${WORKSPACE}"
+            ;;
+        --hide|--raise|--list)
+            [[ -z $ACTION ]] || {
+                echo 'ERROR: Cannot execute more than one action.' >&2
+                exit 1
+            }
+            ACTION=$1
+            ;;
+        *)
+            printf 'Usage: %s [--workspace] --hide | --raise | --list\n' "$0" >&2
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+case "$ACTION" in
+    --hide)
+        hide_active
         ;;
     --raise)
-        raise_from_stack || raise-hidden-window
+        raise_from_stack || raise_fallback
         ;;
     --list)
         list_stack
         ;;
     *)
-        printf 'Usage: %s --minimize | --raise | --list\n' "$0" >&2
+        if [[ -z $ACTION ]]; then
+            echo "ERROR: Missing action." >&2
+        else
+            echo "ERROR: Unknown action '$ACTION'." >&2
+        fi
         exit 1
         ;;
 esac

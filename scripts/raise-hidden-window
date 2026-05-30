@@ -2,10 +2,30 @@
 
 source require-x11
 
-list_mode=0
-[[ ${1-} == "--list" ]] && list_mode=1
+LIST_MODE=
+WORKSPACE=
 
-get_time() {
+current_workspace() {
+    local ws
+
+    ws=$(xprop -root _NET_CURRENT_DESKTOP 2>/dev/null |
+        awk -F' = ' '/_NET_CURRENT_DESKTOP/ {print $2; exit}')
+
+    [[ $ws =~ ^[0-9]+$ ]] || return 1
+    printf '%s\n' "$ws"
+}
+
+window_workspace() {
+    local id=$1 ws
+
+    ws=$(xprop -id "$id" _NET_WM_DESKTOP 2>/dev/null |
+        awk -F' = ' '/_NET_WM_DESKTOP/ {print $2; exit}')
+
+    [[ $ws =~ ^[0-9]+$ || $ws =~ ^0x[0-9a-fA-F]+$ ]] || return 1
+    printf '%s\n' "$ws"
+}
+
+window_time() {
     local id=$1 t ref
 
     t=$(xprop -id "$id" _NET_WM_USER_TIME 2>/dev/null |
@@ -29,7 +49,7 @@ get_time() {
     printf '0|none\n'
 }
 
-get_label() {
+window_label() {
     local id=$1 label
 
     label=$(xprop -id "$id" WM_CLASS 2>/dev/null |
@@ -47,6 +67,25 @@ get_label() {
     printf '<unknown>\n'
 }
 
+while (( $# )); do
+    case "$1" in
+        --workspace)
+            WORKSPACE=$(current_workspace) || {
+                echo "ERROR: Could not retrieve current workspace." >&2
+                exit 1
+            }
+            ;;
+        --list)
+            LIST_MODE=1
+            ;;
+        *)
+            printf 'Usage: %s [--workspace] [--list]\n' "$0" >&2
+            exit 1
+            ;;
+    esac
+    shift
+done
+
 best_id=
 best_time=-1
 fallback_id=
@@ -54,13 +93,13 @@ fallback_id=
 while read -r id; do
     state=$(xprop -id "$id" _NET_WM_STATE 2>/dev/null) || continue
     [[ $state == *"_NET_WM_STATE_HIDDEN"* ]] || continue
-
+    [[ -z $WORKSPACE || $(window_workspace "$id") == "$WORKSPACE" ]] || continue
     [[ -z $fallback_id ]] && fallback_id=$id
 
-    IFS='|' read -r t source < <(get_time "$id")
+    IFS='|' read -r t source < <(window_time "$id")
 
-    if (( list_mode )); then
-        label=$(get_label "$id")
+    if [[ -n "$LIST_MODE" ]]; then
+        label=$(window_label "$id")
         printf '%s | %s | %s | %s\n' "$id" "$t" "$source" "$label"
     fi
 
@@ -75,6 +114,6 @@ done < <(
     tr -d ' '
 )
 
-if (( ! list_mode )); then
+if [[ -z "$LIST_MODE" ]]; then
     wmctrl -i -R "${best_id:-$fallback_id}" 2>/dev/null
 fi
