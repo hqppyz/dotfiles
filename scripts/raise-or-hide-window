@@ -106,9 +106,10 @@ hide_active() {
     # Register into stack
     touch "$STATE_FILE"
     if [[ -s $STATE_FILE ]] && tail -n 1 "$STATE_FILE" 2>/dev/null | grep -qxF "$id"; then
-        return
+        :
+    else
+        printf '%s\n' "$id" >> "$STATE_FILE"
     fi
-    printf '%s\n' "$id" >> "$STATE_FILE"
 
     # Hide
     wmctrl -i -r "$id" -b add,hidden >/dev/null 2>&1
