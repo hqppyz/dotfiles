@@ -8,7 +8,7 @@ export F_NORMAL=$'\e[22;23m'
 export SF_NORMAL='\['"${F_NORMAL}"'\]'
 
 export  F_RESET=$'\e[0m'
-export SF_RESET='\['"${C_RESET}"'\]'
+export SF_RESET='\['"${F_RESET}"'\]'
 
 # Text colors
 export  C_RESET="$F_RESET"  # Deprecated
