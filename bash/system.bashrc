@@ -3,7 +3,7 @@
 alias sudo="sudo "
 alias update-dotfolder="bash $DOTFOLDER/update.sh"
 
-alias nano="nano --rcfile $DOTFOLDER/nanorc"
+alias nano="nano --rcfile $DOTFOLDER/nano/rc"
 alias newsboat="newsboat -C $DOTFOLDER/newsboat/config -u $DOTFOLDER/newsboat/urls"
 
 # Exclude root

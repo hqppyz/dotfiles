@@ -1,7 +1,7 @@
 export DOTFOLDER="/opt/dotfiles"
 export DOTFILES_VER="$(git -C "$DOTFOLDER" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 export PATH="$PATH:$DOTFOLDER/scripts"
-# export XDG_CONFIG_DIRS="$XDG_CONFIG_DIRS:$DOTFOLDER/system"
+export XDG_CONFIG_DIRS="$XDG_CONFIG_DIRS:$DOTFOLDER/system"
 
 export HISTCONTROL=ignoreboth:erasedups
 export LESSHISTFILE=- # Disable creation of .lesshst

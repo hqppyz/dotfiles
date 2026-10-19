@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+source require-colors
+
+PARENT=0
+TARGET=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -p|--parent) PARENT=1 ;;
+    *) TARGET="$1" ;;
+  esac
+  shift
+done
+
+[ -z "$TARGET" ] && { printf "${C_RED}Usage: $(basename "$0") [-p|--parent] <path>${C_RESET}\n" >&2; exit 1; }
+
+[ "$PARENT" -eq 1 ] && [ -f "$TARGET" ] && TARGET=$(dirname "$TARGET")
+
+# TODO: Open if no window is present. Currently it hangs
+#if ! pidof -q thunar; then
+#  thunar "$TARGET" &
+#  exit 0
+#fi
+
+WID=$(xdotool search --onlyvisible --class "thunar" 2>/dev/null | tail -n 1)
+[ -z "$WID" ] && { printf "${C_RED}ERROR: Could not find thunar instance.${C_RESET}\n" >&2; exit 1; }
+
+xdotool windowactivate --sync "$WID"
+sleep 0.05
+xdotool key "ctrl+l" && xdotool type --delay 0 "$TARGET" && xdotool key "Return"

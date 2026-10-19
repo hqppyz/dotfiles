@@ -32,7 +32,12 @@ build_prompt() {
     fi
   fi
 
-  PS1="$repository${SC_PURPLE}\W$changes_star $exit_color> ${SC_WHITE}"
+  local virtual_env=""
+  if [ -n "${VIRTUAL_ENV_PROMPT:-}" ]; then
+    virtual_env="${SC_CYAN}(${VIRTUAL_ENV_PROMPT}) "
+  fi
+
+  PS1="$virtual_env$repository${SC_PURPLE}\W$changes_star $exit_color> ${SC_WHITE}"
   #local left_prompt="${SC_PURPLE}\W$changes_star $exit_color> ${SC_WHITE}"
   #local right_prompt="$repository"
   #PS1=$(printf "%*s\r%s\n" "$(($(tput cols) + 10))" "$right_prompt" "$left_prompt")

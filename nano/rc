@@ -1,5 +1,6 @@
 include /usr/share/nano/*.nanorc
 include /usr/share/nano/extra/*.nanorc
+include /opt/dotfiles/nano/*.nanorc
 
 set nonewlines # as cool as it sounds I dont want unnoticeable diff
 
