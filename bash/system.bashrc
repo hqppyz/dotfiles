@@ -1,3 +1,8 @@
+if [ -z "$DOTFILES_LOADED" ]; then
+  DOTFILES_LOADED=1
+  . /opt/dotfiles/profile/system.profile
+fi
+
 #shopt -s autocd # Use folders name as implicit cd
 
 alias sudo="sudo "

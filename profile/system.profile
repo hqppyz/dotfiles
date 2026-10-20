@@ -20,3 +20,8 @@ export GROFF_NO_SGR=1                  # for konsole and gnome-terminal
 if [[ -n "$EUID" && "$EUID" -ne 0 ]]; then
   source "$DOTFOLDER/profile/user.profile"
 fi
+
+if [ -z "$DOTFILES_LOADED" ] && [ -n "$BASH_VERSION" ]; then
+  DOTFILES_LOADED=1
+  . /opt/dotfiles/bash/system.bashrc
+fi
