@@ -35,8 +35,17 @@ export SC_PURPLE='\['"${C_PURPLE}"'\]'
 export  C_CYAN=$'\e[36m'
 export SC_CYAN='\['"${C_CYAN}"'\]'
 
-export  C_LIGHTGRAY=$'\e[37m'
+export  C_GRAY=$'\e[37m'
+export SC_GRAY='\['"${C_GRAY}"'\]'
+
+export  C_LIGHTGRAY=$'\e[38;2;153;153;153m' # Claude dim text (truecolor)
 export SC_LIGHTGRAY='\['"${C_LIGHTGRAY}"'\]'
+
+export  C_ORANGE=$'\e[38;2;215;119;87m' # Claude orange (truecolor)
+export SC_ORANGE='\['"${C_ORANGE}"'\]'
+
+export  C_YELLOW=$'\e[38;2;255;193;7m' # Claude yellow, auto mode (truecolor)
+export SC_YELLOW='\['"${C_YELLOW}"'\]'
 
 export  C_WHITE=$'\e[97m'
 export SC_WHITE='\['"${C_WHITE}"'\]'
