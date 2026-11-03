@@ -1,10 +1,16 @@
 export DOTFOLDER="/opt/dotfiles"
 export DOTFILES_VER="$(git -C "$DOTFOLDER" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 export PATH="$PATH:$DOTFOLDER/scripts"
-export XDG_CONFIG_DIRS="$XDG_CONFIG_DIRS:$DOTFOLDER/system"
+
+# XDG spec defaults
+export XDG_CONFIG_DIRS="$DOTFOLDER/system:${XDG_CONFIG_DIRS:-/etc/xdg}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
 export HISTCONTROL=ignoreboth:erasedups
-export LESSHISTFILE=- # Disable creation of .lesshst
+export HISTFILE="$XDG_STATE_HOME"/bash/history
 
 # Less colored display (for manpages) (from https://wiki.archlinux.org/index.php/Color_output_in_console#man)
 export LESS_TERMCAP_mb=$'\e[1;31m'     # begin bold

@@ -3,6 +3,11 @@
 
 source require-colors
 
+# Anti $HOME pollution
+alias vim='vim -i ~/.local/state/vim/viminfo'
+alias wget='wget --hsts-file="$XDG_DATA_HOME/wget-hsts"'
+alias irssi='irssi --config="$XDG_CONFIG_HOME/irssi/config" --home="$XDG_DATA_HOME/irssi"'
+
 PROMPT_COMMAND='build_prompt'
 build_prompt() {
   local exit_code=$?

@@ -49,3 +49,19 @@ export SC_YELLOW='\['"${C_YELLOW}"'\]'
 
 export  C_WHITE=$'\e[97m'
 export SC_WHITE='\['"${C_WHITE}"'\]'
+
+# Heat scale, low (0, trivial) to high (4, stop) (truecolor)
+export  C_HEAT0=$'\e[38;2;149;117;205m' # violet
+export SC_HEAT0='\['"${C_HEAT0}"'\]'
+
+export  C_HEAT1=$'\e[38;2;95;135;215m'  # blue
+export SC_HEAT1='\['"${C_HEAT1}"'\]'
+
+export  C_HEAT2=$'\e[38;2;124;179;66m'  # green
+export SC_HEAT2='\['"${C_HEAT2}"'\]'
+
+export  C_HEAT3=$'\e[38;2;255;140;66m'  # orange
+export SC_HEAT3='\['"${C_HEAT3}"'\]'
+
+export  C_HEAT4=$'\e[38;2;229;57;53m'   # red
+export SC_HEAT4='\['"${C_HEAT4}"'\]'
