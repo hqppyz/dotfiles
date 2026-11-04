@@ -37,6 +37,15 @@ resolve_dotfile_target() {
   return 1
 }
 
+# Drops every dotfiles include: a marker line plus the include under it,
+# or an older include with the marker trailing on the same line
+remove_dotfile_includes() {
+  sed -E -i \
+    -e '/^# (Ap|Pre)pended by dotfiles \[.*\]$/{N;d}' \
+    -e '/# (Ap|Pre)pended by dotfiles \[.*\]$/d' \
+    "$1"
+}
+
 prepend_dotfile() {
   local target="$(resolve_dotfile_target "$@")"
   [[ -z "$target" ]] && return 1
@@ -53,18 +62,16 @@ prepend_dotfile() {
   local src="$DOTFOLDER/$1"
   local fmt="$2"
   local marker="# Prepended by dotfiles [$DOTFILES_VER]"
-  local marker_pattern="# Prepended by dotfiles \\[.*\\]$"
-  local line="$(printf "$fmt" "$src" "$src") $marker"
+  local include="${fmt//%s/"$src"}"
 
   grep -Fq "$marker" "$target" && return 0
 
   echo "${C_BLUE}Prepending $DOTFOLDER/$1 to $target${C_RESET}"
   "$DRY_RUN" || {
-    sed -i \
-      -e "\|$marker_pattern|d" \
-      "$target"
+    remove_dotfile_includes "$target"
     sed -i "1i\\
-$line" "$target"
+$marker\\
+$include" "$target"
   }
 
   return 0
@@ -86,19 +93,18 @@ append_dotfile() {
   local src="$DOTFOLDER/$1"
   local fmt="$2"
   local marker="# Appended by dotfiles [$DOTFILES_VER]"
-  local marker_pattern="# Appended by dotfiles \\[.*\\]$"
-  local line="$(printf "$fmt" "$src" "$src") $marker"
+  local include="${fmt//%s/"$src"}"
 
   grep -Fq "$marker" "$target" && return 0
 
   echo "${C_BLUE}Appending $DOTFOLDER/$1 to $target${C_RESET}"
   "$DRY_RUN" || {
     local replaced=false
-    grep -q "$marker_pattern" "$target" && replaced=true
-    sed -i \
-      -e "\|$marker_pattern|d" \
-      "$target"
-    "$replaced" && printf '%s' "$line" >> "$target" || printf '\n%s' "$line" >> "$target"
+    grep -Eq "# (Ap|Pre)pended by dotfiles \[.*\]$" "$target" && replaced=true
+    remove_dotfile_includes "$target"
+    [ -n "$(tail -c 1 "$target")" ] && echo >> "$target"
+    "$replaced" || echo >> "$target"
+    printf '%s\n%s\n' "$marker" "$include" >> "$target"
   }
 
   return 0

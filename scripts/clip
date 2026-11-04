@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Copy stdin to the clipboard with xclip, falling back to the terminal (OSC 52). Works over SSH.
+
+source require-colors
+
+[ -t 0 ] && { printf "${C_RED}Usage: <command> | $(basename "$0")${C_RESET}\n" >&2; exit 1; }
+
+# Buffer stdin so it can be replayed if xclip fails
+TMP=$(mktemp)
+trap 'rm -f "$TMP"' EXIT
+cat > "$TMP"
+
+# xclip fails fast when there is no reachable X display (e.g. SSH without forwarding)
+if [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null && xclip -selection clipboard -i "$TMP" >/dev/null 2>&1; then
+  exit 0
+fi
+
+DATA=$(base64 -w0 "$TMP")
+SEQ="\033]52;c;$DATA\a"
+
+# tmux needs the sequence wrapped in a DCS passthrough
+[ -n "${TMUX:-}" ] && SEQ="\033Ptmux;\033$SEQ\033\\"
+
+printf "$SEQ" > /dev/tty

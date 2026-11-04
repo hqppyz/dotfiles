@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Create or attach to a tmux named session
+# Usage: smux <session> [<command> [<args>...]]
+
+source require-colors
+
+[ $# -lt 1 ] && { printf "${C_RED}Usage: $(basename "$0") <session> [<command> [<args>...]]${C_RESET}\n" >&2; exit 1; }
+
+SESSION="$1"
+shift
+
+exec tmux new-session -A -s "$SESSION" "$@"

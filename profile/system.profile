@@ -1,6 +1,12 @@
+DOTFILES_LOADED=1
 export DOTFOLDER="/opt/dotfiles"
 export DOTFILES_VER="$(git -C "$DOTFOLDER" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 export PATH="$PATH:$DOTFOLDER/scripts"
+if command -v codium >/dev/null; then
+  export EDITOR="codium"
+else
+  export EDITOR="nano"
+fi
 
 # XDG spec defaults
 export XDG_CONFIG_DIRS="$DOTFOLDER/system:${XDG_CONFIG_DIRS:-/etc/xdg}"
@@ -25,9 +31,4 @@ export GROFF_NO_SGR=1                  # for konsole and gnome-terminal
 # Exclude root
 if [[ -n "$EUID" && "$EUID" -ne 0 ]]; then
   source "$DOTFOLDER/profile/user.profile"
-fi
-
-if [ -z "$DOTFILES_LOADED" ] && [ -n "$BASH_VERSION" ]; then
-  DOTFILES_LOADED=1
-  . /opt/dotfiles/bash/system.bashrc
 fi

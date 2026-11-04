@@ -2,6 +2,7 @@
 
 # Anti $HOME pollution
 export LESSHISTFILE=-
+export WGETRC="$DOTFOLDER/system/wget/wgetrc"
 export WINEPREFIX="$XDG_DATA_HOME"/wine
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 export _JAVA_OPTIONS="-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java -Dorg.bytedeco.javacpp.cachedir=$XDG_CACHE_HOME/javacpp"
