@@ -25,6 +25,6 @@ git pull --ff-only origin master
 
 # Run install.sh
 echo "${C_BLUE}Running installer...${C_RESET}"
-sudo bash install.sh
+bash install.sh
 
 echo "${C_GREEN}Update successful!${C_RESET}"

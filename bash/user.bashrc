@@ -27,7 +27,7 @@ build_prompt() {
     local repository_name=$(git rev-parse --abbrev-ref HEAD)
     repository="${SC_GREEN}[$repository_branch@$repository_name] "
 
-    if git ls-files --others --exclude-standard --directory | grep -q .; then
+    if git ls-files --others --exclude-standard | grep -q .; then
       # Untracked files
       changes_star="${SC_RED}*"
     elif ! git diff --quiet || ! git diff --cached --quiet; then

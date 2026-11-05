@@ -1,0 +1,1 @@
+{ "name": "notif", "version": "0.1.0", "description": "Per-project ntfy notifications: /notif set|send and a send tool for Claude" }

@@ -11,11 +11,29 @@ export  F_RESET=$'\e[0m'
 export SF_RESET='\['"${F_RESET}"'\]'
 
 # Text colors
-export  C_RESET="$F_RESET"  # Deprecated
-export SC_RESET="$SF_RESET" # Deprecated
+# Neutral scale, 1 (strongest contrast) to 4 (faintest), so the numbers keep
+# their meaning on both backgrounds. Values follow DOTFILES_THEME (dark or
+# light), else the background in COLORFGBG, else dark (truecolor).
+if [ -z "$DOTFILES_THEME" ]; then
+  case "${COLORFGBG##*;}" in 7|15) DOTFILES_THEME=light ;; *) DOTFILES_THEME=dark ;; esac
+fi
+export DOTFILES_THEME
 
-export  C_BLACK=$'\e[30m'
-export SC_BLACK='\['"${C_BLACK}"'\]'
+export  C_NEUTRAL_1=$'\e[39m' # default foreground
+export SC_NEUTRAL_1='\['"${C_NEUTRAL_1}"'\]'
+
+if [ "$DOTFILES_THEME" = light ]; then
+  export C_NEUTRAL_2=$'\e[38;2;90;90;90m'
+  export C_NEUTRAL_3=$'\e[38;2;120;120;120m'
+  export C_NEUTRAL_4=$'\e[38;2;175;175;175m'
+else
+  export C_NEUTRAL_2=$'\e[38;2;190;190;190m'
+  export C_NEUTRAL_3=$'\e[38;2;153;153;153m' # Claude dim text
+  export C_NEUTRAL_4=$'\e[38;2;102;102;102m'
+fi
+export SC_NEUTRAL_2='\['"${C_NEUTRAL_2}"'\]'
+export SC_NEUTRAL_3='\['"${C_NEUTRAL_3}"'\]'
+export SC_NEUTRAL_4='\['"${C_NEUTRAL_4}"'\]'
 
 export  C_RED=$'\e[31m'
 export SC_RED='\['"${C_RED}"'\]'
@@ -35,20 +53,11 @@ export SC_PURPLE='\['"${C_PURPLE}"'\]'
 export  C_CYAN=$'\e[36m'
 export SC_CYAN='\['"${C_CYAN}"'\]'
 
-export  C_GRAY=$'\e[37m'
-export SC_GRAY='\['"${C_GRAY}"'\]'
-
-export  C_LIGHTGRAY=$'\e[38;2;153;153;153m' # Claude dim text (truecolor)
-export SC_LIGHTGRAY='\['"${C_LIGHTGRAY}"'\]'
-
 export  C_ORANGE=$'\e[38;2;215;119;87m' # Claude orange (truecolor)
 export SC_ORANGE='\['"${C_ORANGE}"'\]'
 
 export  C_YELLOW=$'\e[38;2;255;193;7m' # Claude yellow, auto mode (truecolor)
 export SC_YELLOW='\['"${C_YELLOW}"'\]'
-
-export  C_WHITE=$'\e[97m'
-export SC_WHITE='\['"${C_WHITE}"'\]'
 
 # Heat scale, low (0, trivial) to high (4, stop) (truecolor)
 export  C_HEAT0=$'\e[38;2;149;117;205m' # violet
@@ -65,3 +74,20 @@ export SC_HEAT3='\['"${C_HEAT3}"'\]'
 
 export  C_HEAT4=$'\e[38;2;229;57;53m'   # red
 export SC_HEAT4='\['"${C_HEAT4}"'\]'
+
+# Legacy: kept so old scripts keep working, use the colors above instead.
+# None match a neutral step on both themes, so each keeps its own value.
+export  C_RESET="$F_RESET"  # Use F_RESET
+export SC_RESET="$SF_RESET" # Use SF_RESET
+
+export  C_BLACK=$'\e[30m'
+export SC_BLACK='\['"${C_BLACK}"'\]'
+
+export  C_GRAY=$'\e[37m'
+export SC_GRAY='\['"${C_GRAY}"'\]'
+
+export  C_LIGHTGRAY=$'\e[38;2;153;153;153m' # C_NEUTRAL_3 on dark (truecolor)
+export SC_LIGHTGRAY='\['"${C_LIGHTGRAY}"'\]'
+
+export  C_WHITE=$'\e[97m'
+export SC_WHITE='\['"${C_WHITE}"'\]'
