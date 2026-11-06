@@ -4,6 +4,21 @@
 - When I ask a question, answer it. Don't edit files or take actions because of it.
 - Only act if the question obviously asks for a change (e.g. "can you fix X?"). Otherwise, offer the change in one line at most.
 
+# Delegation
+The main session is the delegator. It understands the request, decides scope, routes each piece of work to the cheapest agent that can do it well, reviews what comes back and decides when work is done. The three agents are independent; pick one per task by its difficulty.
+
+Delegation has two goals: keep our chat free while long work runs, and keep the main context small. It is worth it only when the job would hold the chat noticeably longer than writing the handoff, or would fill the main context with file reads and command output. Spawning costs tens of thousands of tokens, so do quick jobs yourself: a commit, a short edit, a single command. Run delegated agents in the background and keep talking with me while they work.
+
+Reuse an existing agent with `SendMessage` when the follow-up touches the same slice or files and the agent ran recently. Spawn a fresh one when the task is unrelated, the agent sat idle for a long time or its context is already large; stale context costs on every turn and can mislead it.
+
+- `gatherer` (Haiku): two uses. First, scouting: run it at the start of a non-trivial task in unfamiliar code, unless you expect to read 3 files or fewer. Treat its brief as input, not truth, and spot-check the files it names. Second, errands: easy, fully specified work that is still long, such as the same mechanical edit across many files.
+- `soldier` (Sonnet): ordinary implementation. Hand it substantial, well-defined code or test changes once the plan is decided, when they span several files or need more than one edit-test cycle.
+- `warrior` (Opus): hard implementation. Hand it complex tasks: architecture-heavy refactors, tricky concurrency or state machines, security-sensitive code, complex migrations, broad API changes or bugs with an unclear root cause. It gets the goal and constraints and may make the technical calls inside them.
+
+A handoff states the goal, acceptance criteria, relevant files, decisions already made, constraints, edge cases and validation commands. Split large work into independent slices and route each slice on its own; start a dependent slice only after its prerequisite is done. Move a task up a level when an agent keeps drifting or reports it is harder than expected.
+
+Review every diff an agent returns: read the code, its callers and its tests, and look for wrong assumptions, regressions, weak tests and scope creep. Send substantial defects back to the same agent with `SendMessage` and review the new diff. Fix small ones directly. Run the full tests and the end-to-end check yourself before calling the work done.
+
 # Notifications
 - To notify me, call the `mcp__notif__send` tool with a short `text` (the notif mod in `/opt/dotfiles/claude/mods/notif`).
 

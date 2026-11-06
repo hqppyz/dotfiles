@@ -213,4 +213,11 @@ merge_dotfile_json "$CLAUDE_HOME/settings.json" "claude/settings.json"
 "$DRY_RUN" || { mkdir -p "$CLAUDE_HOME" && { [[ -e "$CLAUDE_HOME/CLAUDE.md" ]] || touch "$CLAUDE_HOME/CLAUDE.md"; }; }
 append_dotfile "$CLAUDE_HOME/CLAUDE.md" -- "claude/CLAUDE.md" '@%s'
 
+# Subagents are linked one by one, so agents of my own can live next to them
+for f in "$DOTFOLDER"/claude/agents/*.md; do
+  [[ "$(readlink "$CLAUDE_HOME/agents/${f##*/}")" == "$f" ]] && continue
+  echo "${C_BLUE}Linking $f into $CLAUDE_HOME/agents${C_RESET}"
+  "$DRY_RUN" || { mkdir -p "$CLAUDE_HOME/agents" && ln -sf "$f" "$CLAUDE_HOME/agents/${f##*/}"; }
+done
+
 echo "${C_GREEN}Installation successful!${C_RESET}"

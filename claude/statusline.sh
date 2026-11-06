@@ -110,6 +110,23 @@ if [ -n "$wkn" ]; then
   budget=$dbud
 fi
 
+# Usage log, shared by all sessions in $XDG_STATE_HOME/claude/usage-log.jsonl:
+# one JSON line each time the 5h or weekly used % changes, to compare how much
+# a task costs with and without subagents. usage-log.last holds "<5h>|<wk>".
+if [ -n "$h5n$wkn" ]; then
+  lf="${XDG_STATE_HOME:-$HOME/.local/state}/claude/usage-log.jsonl" key="$h5n|$wkn" lkey=""
+  [ -f "${lf%.jsonl}.last" ] && [ ! -L "${lf%.jsonl}.last" ] && read -r lkey < "${lf%.jsonl}.last"
+  if [ "$key" != "$lkey" ]; then
+    mkdir -p "${lf%/*}"
+    printf '%s' "$input" | jq -c '{
+      ts: (now | todate), session_id, model: (.model.id // .model.display_name),
+      effort: .effort.level, five_hour: .rate_limits.five_hour.used_percentage,
+      seven_day: .rate_limits.seven_day.used_percentage,
+      session_cost_usd: (.cost.total_cost_usd // 0)
+    }' >> "$lf" && printf '%s\n' "$key" > "${lf%.jsonl}.last"
+  fi
+fi
+
 # heat <x> <blue from> <green from> <orange from> <red from>: the C_HEAT
 # level for <x>. Violet is trivial (zero included), blue normal, green room to
 # breathe, orange should try to stop or compact, red is STOP.

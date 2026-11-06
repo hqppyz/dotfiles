@@ -3,6 +3,11 @@
     "NTFY_URL": "https://notif.montanari.cc/claude",
     "CLAUDE_CODE_PLUGIN_DIRS": "@DOTFOLDER@/claude/mods/notif:@DOTFOLDER@/claude/mods/edit"
   },
+  "model": "opus",
+  "modelSettings": {
+    "claude-opus-5-5": { "effortLevel": "medium" },
+    "claude-sonnet-5-5": { "effortLevel": "medium" }
+  },
   "statusLine": {
     "type": "command",
     "command": "bash @DOTFOLDER@/claude/statusline.sh",
