@@ -84,10 +84,10 @@ async function send($: EngineInterface, via: Via, text: string): Promise<string>
   return out
 }
 
-// envVar: name from the environment, else from ~/.claude/.env, which keeps
+// envVar: value (read from the environment by the caller, since $.env.get
+// takes only literal names), else name from ~/.claude/.env, which keeps
 // secrets out of settings.json.
-async function envVar($: EngineInterface, name: string): Promise<string | undefined> {
-  const value = await $.env.get(name)
+async function envVar($: EngineInterface, name: string, value: string | undefined): Promise<string | undefined> {
   if (value) return value
   const cfg = (await $.env.get('CLAUDE_CONFIG_DIR')) ?? `${await $.env.get('HOME')}/.claude`
   const file = `${cfg}/.env`
@@ -100,8 +100,8 @@ async function envVar($: EngineInterface, name: string): Promise<string | undefi
 }
 
 async function post($: EngineInterface, text: string): Promise<string> {
-  const url = await envVar($, 'NTFY_URL')
-  const token = await envVar($, 'NTFY_TOKEN')
+  const url = await envVar($, 'NTFY_URL', await $.env.get('NTFY_URL'))
+  const token = await envVar($, 'NTFY_TOKEN', await $.env.get('NTFY_TOKEN'))
   if (!url || !token) return 'notif: NTFY_URL or NTFY_TOKEN is not set'
   const project = (await $.session.root()).split('/').pop() || '?'
   const body = `[${project}] ${text.replace(/\s+/g, ' ').trim().slice(0, 300)}`

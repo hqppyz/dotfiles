@@ -1,12 +1,12 @@
 {
   "env": {
     "NTFY_URL": "https://notif.montanari.cc/claude",
-    "CLAUDE_CODE_PLUGIN_DIRS": "@DOTFOLDER@/claude/mods/notif:@DOTFOLDER@/claude/mods/edit"
+    "CLAUDE_CODE_PLUGIN_DIRS": "@DOTFOLDER@/claude/mods/notif:@DOTFOLDER@/claude/mods/edit:@HOME@/.local/src/aigents:@DOTFOLDER@/claude/mods/playwright",
+    "PLAYWRIGHT_BROWSERS_PATH": "/opt/playwright/browsers"
   },
-  "model": "opus",
-  "modelSettings": {
-    "claude-opus-5-5": { "effortLevel": "medium" },
-    "claude-sonnet-5-5": { "effortLevel": "medium" }
+  "attribution": {
+    "commit": "Co-Authored-By: Claude 5.5 <noreply@anthropic.com>",
+    "pr": "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
   },
   "statusLine": {
     "type": "command",
@@ -78,5 +78,8 @@
       "Bash(gh workflow enable *)",
       "Bash(gh workflow run *)"
     ]
+  },
+  "enabledPlugins": {
+    "playwright@claude-plugins-official": false
   }
 }

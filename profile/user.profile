@@ -12,3 +12,7 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export PATH="$PATH:$CARGO_HOME/bin"
 export NPM_CONFIG_CACHE="$XDG_CACHE_HOME"/npm
 export ICEAUTHORITY="$XDG_CACHE_HOME"/ICEauthority
+
+# Shared Playwright install, see /opt/playwright/README.md
+export PLAYWRIGHT_BROWSERS_PATH=/opt/playwright/browsers
+case ":$NODE_PATH:" in *:/opt/playwright/node_modules:*) ;; *) export NODE_PATH="/opt/playwright/node_modules${NODE_PATH:+:$NODE_PATH}" ;; esac

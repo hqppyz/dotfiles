@@ -1,0 +1,10 @@
+# bash completion for smux: session names, then the command to run in it
+_smux() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    if [ "$COMP_CWORD" -eq 1 ]; then
+        mapfile -t COMPREPLY < <(compgen -W "$(tmux list-sessions -F '#{session_name}' 2>/dev/null)" -- "$cur")
+    else
+        _command_offset 2
+    fi
+}
+complete -F _smux smux

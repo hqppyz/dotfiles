@@ -13,7 +13,6 @@ source require-colors
 
 # Runs as the DOTFOLDER owner, only the /etc edits go through sudo
 source require-owner "$DOTFOLDER"
-"$DRY_RUN" || sudo -v || exit 1
 
 echo "${C_BLUE}Giving everybody partial rights to $DOTFOLDER${C_RESET}"
 "$DRY_RUN" || {
@@ -21,6 +20,14 @@ echo "${C_BLUE}Giving everybody partial rights to $DOTFOLDER${C_RESET}"
   # and Claude reloads the mods when it sees their files change
   find "$DOTFOLDER" ! -perm -a=r -exec chmod a+r {} +
   find "$DOTFOLDER/scripts" \( -type d -o -perm /111 \) ! -perm -a=x -exec chmod a+x {} +
+}
+
+# Runs the command as is when the owner can write $1 and its directory,
+# else through sudo, which asks for the password on first use only
+priv() {
+  local target="$1"
+  shift
+  if [[ -w "$target" && -w "$(dirname "$target")" ]]; then "$@"; else sudo "$@"; fi
 }
 
 resolve_dotfile_target() {
@@ -45,7 +52,7 @@ resolve_dotfile_target() {
 # Drops every dotfiles include: a marker line plus the include under it,
 # or an older include with the marker trailing on the same line
 remove_dotfile_includes() {
-  sudo sed -E -i \
+  priv "$1" sed -E -i \
     -e '/^# (Ap|Pre)pended by dotfiles \[.*\]$/{N;d}' \
     -e '/# (Ap|Pre)pended by dotfiles \[.*\]$/d' \
     "$1"
@@ -70,17 +77,17 @@ prepend_dotfile() {
   fi
   shift
 
-  local src="$DOTFOLDER/$1"
+  local src="$1"; [[ "$src" == /* ]] || src="$DOTFOLDER/$1"
   local fmt="$2"
   local marker="# Prepended by dotfiles [$DOTFILES_VER]"
   local include="${fmt//%s/"$src"}"
 
   dotfile_include_current "$target" Pre "$include" && return 0
 
-  echo "${C_BLUE}Prepending $DOTFOLDER/$1 to $target${C_RESET}"
+  echo "${C_BLUE}Prepending $src to $target${C_RESET}"
   "$DRY_RUN" || {
     remove_dotfile_includes "$target"
-    sudo sed -i "1i\\
+    priv "$target" sed -i "1i\\
 $marker\\
 $include" "$target"
   }
@@ -101,21 +108,21 @@ append_dotfile() {
   fi
   shift
 
-  local src="$DOTFOLDER/$1"
+  local src="$1"; [[ "$src" == /* ]] || src="$DOTFOLDER/$1"
   local fmt="$2"
   local marker="# Appended by dotfiles [$DOTFILES_VER]"
   local include="${fmt//%s/"$src"}"
 
   dotfile_include_current "$target" Ap "$include" && return 0
 
-  echo "${C_BLUE}Appending $DOTFOLDER/$1 to $target${C_RESET}"
+  echo "${C_BLUE}Appending $src to $target${C_RESET}"
   "$DRY_RUN" || {
     local replaced=false
     grep -Eq "# (Ap|Pre)pended by dotfiles \[.*\]$" "$target" && replaced=true
     remove_dotfile_includes "$target"
-    [ -n "$(tail -c 1 "$target")" ] && echo | sudo tee -a "$target" > /dev/null
-    "$replaced" || echo | sudo tee -a "$target" > /dev/null
-    printf '%s\n%s\n' "$marker" "$include" | sudo tee -a "$target" > /dev/null
+    [ -n "$(tail -c 1 "$target")" ] && echo | priv "$target" tee -a "$target" > /dev/null
+    "$replaced" || echo | priv "$target" tee -a "$target" > /dev/null
+    printf '%s\n%s\n' "$marker" "$include" | priv "$target" tee -a "$target" > /dev/null
   }
 
   return 0
@@ -128,7 +135,7 @@ append_dotfile() {
 #   replacement  dotted key path -> value the merge wrote
 # Objects merge leaf by leaf, arrays are leaves too but merge as a union.
 # Rerunning drops the keys that left $2 (restoring their original), keeps the
-# saved originals and applies $2 again. @DOTFOLDER@ in $2 becomes DOTFOLDER.
+# saved originals and applies $2 again. @DOTFOLDER@ in $2 becomes DOTFOLDER, @HOME@ becomes HOME.
 # Limit: dotted key paths cannot tell apart object keys that contain a dot.
 merge_dotfile_json() {
   local target="$1"
@@ -146,7 +153,7 @@ merge_dotfile_json() {
   [[ -f "$target" ]] || echo '{}' > "$target"
 
   merged="$(jq --arg commit "$DOTFILES_VER" \
-    --argjson src "$(sed "s|@DOTFOLDER@|$DOTFOLDER|g" "$src")" '
+    --argjson src "$(sed "s|@DOTFOLDER@|$DOTFOLDER|g; s|@HOME@|$HOME|g" "$src")" '
     def leaves($p):
       if type == "object" then to_entries[] | . as $e | $e.value | leaves($p + [$e.key])
       else {key: ($p | join(".")), value: .} end;
@@ -189,6 +196,22 @@ merge_dotfile_json() {
   printf '%s\n' "$merged" > "$target.tmp" && mv "$target.tmp" "$target"
 }
 
+# Claude Code only reads its user scope, so the dotfiles go in there
+# instead of /etc/claude-code, which every claude process would inherit
+CLAUDE_HOME="$HOME/.claude"
+merge_dotfile_json "$CLAUDE_HOME/settings.json" "claude/settings.json"
+"$DRY_RUN" || { mkdir -p "$CLAUDE_HOME" && { [[ -e "$CLAUDE_HOME/CLAUDE.md" ]] || touch "$CLAUDE_HOME/CLAUDE.md"; }; }
+append_dotfile "$CLAUDE_HOME/CLAUDE.md" -- "claude/CLAUDE.md" '@%s'
+
+# Agent prompts, roles and the aigents mod live in their own repo
+AIGENTS="$HOME/.local/src/aigents"
+[[ -d "$AIGENTS" ]] || echo "${C_RED}Missing $AIGENTS, agent setup skipped${C_RESET}" >&2
+
+# Codex does not expand @ includes, so explicitly tell it to read the source.
+CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
+[[ -d "$AIGENTS" ]] && { "$DRY_RUN" || { mkdir -p "$CODEX_DIR" && { [[ -e "$CODEX_DIR/AGENTS.md" ]] || touch "$CODEX_DIR/AGENTS.md"; }; }; }
+[[ -d "$AIGENTS" ]] && append_dotfile "$CODEX_DIR/AGENTS.md" -- "$AIGENTS/codex/AGENTS.md" 'Read and follow `%s` explicitly at the start of each session.'
+
 BASH_INCLUDE='[ -r "%s" ] && . "%s"'
 prepend_dotfile "/etc/profile" -- "profile/system.profile" "$BASH_INCLUDE"
 prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/system.bashrc" "$BASH_INCLUDE"
@@ -204,20 +227,6 @@ for f in mpv.conf input.conf; do
     sudo mkdir -p /etc/mpv
     sudo ln -sf "$DOTFOLDER/system/mpv/$f" "/etc/mpv/$f"
   }
-done
-
-# Claude Code only reads its user scope, so the dotfiles go in there
-# instead of /etc/claude-code, which every claude process would inherit
-CLAUDE_HOME="$HOME/.claude"
-merge_dotfile_json "$CLAUDE_HOME/settings.json" "claude/settings.json"
-"$DRY_RUN" || { mkdir -p "$CLAUDE_HOME" && { [[ -e "$CLAUDE_HOME/CLAUDE.md" ]] || touch "$CLAUDE_HOME/CLAUDE.md"; }; }
-append_dotfile "$CLAUDE_HOME/CLAUDE.md" -- "claude/CLAUDE.md" '@%s'
-
-# Subagents are linked one by one, so agents of my own can live next to them
-for f in "$DOTFOLDER"/claude/agents/*.md; do
-  [[ "$(readlink "$CLAUDE_HOME/agents/${f##*/}")" == "$f" ]] && continue
-  echo "${C_BLUE}Linking $f into $CLAUDE_HOME/agents${C_RESET}"
-  "$DRY_RUN" || { mkdir -p "$CLAUDE_HOME/agents" && ln -sf "$f" "$CLAUDE_HOME/agents/${f##*/}"; }
 done
 
 echo "${C_GREEN}Installation successful!${C_RESET}"

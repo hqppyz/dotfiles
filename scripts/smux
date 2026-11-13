@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # Create or attach to a tmux named session
-# Usage: smux <session> [<command> [<args>...]]
+# Usage: smux            (list alive sessions)
+#        smux <session> [<command> [<args>...]]
 
 source require-colors
 
-[ $# -lt 1 ] && { printf "${C_RED}Usage: $(basename "$0") <session> [<command> [<args>...]]${C_RESET}\n" >&2; exit 1; }
+if [ $# -lt 1 ]; then
+    tmux list-sessions -F '#{session_name}' 2>/dev/null \
+        || printf "${C_YELLOW}No tmux sessions${C_RESET}\n" >&2
+    exit 0
+fi
 
 SESSION="$1"
 shift
