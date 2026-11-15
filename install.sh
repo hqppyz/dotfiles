@@ -203,14 +203,12 @@ merge_dotfile_json "$CLAUDE_HOME/settings.json" "claude/settings.json"
 "$DRY_RUN" || { mkdir -p "$CLAUDE_HOME" && { [[ -e "$CLAUDE_HOME/CLAUDE.md" ]] || touch "$CLAUDE_HOME/CLAUDE.md"; }; }
 append_dotfile "$CLAUDE_HOME/CLAUDE.md" -- "claude/CLAUDE.md" '@%s'
 
-# Agent prompts, roles and the aigents mod live in their own repo
-AIGENTS="$HOME/.local/src/aigents"
-[[ -d "$AIGENTS" ]] || echo "${C_RED}Missing $AIGENTS, agent setup skipped${C_RESET}" >&2
-
-# Codex does not expand @ includes, so explicitly tell it to read the source.
-CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
-[[ -d "$AIGENTS" ]] && { "$DRY_RUN" || { mkdir -p "$CODEX_DIR" && { [[ -e "$CODEX_DIR/AGENTS.md" ]] || touch "$CODEX_DIR/AGENTS.md"; }; }; }
-[[ -d "$AIGENTS" ]] && append_dotfile "$CODEX_DIR/AGENTS.md" -- "$AIGENTS/codex/AGENTS.md" 'Read and follow `%s` explicitly at the start of each session.'
+# Codex reads one global file and no @ includes, so it gets the same file whole
+CODEX_AGENTS="${CODEX_HOME:-$HOME/.codex}/AGENTS.md"
+if [[ "$(readlink "$CODEX_AGENTS")" != "$DOTFOLDER/claude/CLAUDE.md" ]]; then
+  echo "${C_BLUE}Linking $DOTFOLDER/claude/CLAUDE.md to $CODEX_AGENTS${C_RESET}"
+  "$DRY_RUN" || { mkdir -p "$(dirname "$CODEX_AGENTS")" && ln -sfn "$DOTFOLDER/claude/CLAUDE.md" "$CODEX_AGENTS"; }
+fi
 
 BASH_INCLUDE='[ -r "%s" ] && . "%s"'
 prepend_dotfile "/etc/profile" -- "profile/system.profile" "$BASH_INCLUDE"
