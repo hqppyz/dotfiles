@@ -17,6 +17,7 @@ alias la="ls -a"
 alias grep="grep --color=auto"
 alias less="less -R"
 alias bat="bat --paging=never"
+alias userctl="systemctl --user"
 
 if command -v kitten >/dev/null; then
   cat() {
