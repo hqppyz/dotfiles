@@ -2,6 +2,7 @@
 # Create or attach to a tmux named session
 # Usage: smux            (list alive sessions)
 #        smux <session> [<command> [<args>...]]
+# Dependencies: tmux
 
 source require-colors
 

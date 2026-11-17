@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Dependencies: git
 
 echo "Sourcing dependencies..."
 WORKDOTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

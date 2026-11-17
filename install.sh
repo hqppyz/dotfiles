@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Dependencies: jq, sudo, git (optional)
 
 DRY_RUN=false
 if [[ "$1" == "--dry" ]]; then

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Dependencies: wmctrl, xorg-xprop
 
 source require-x11
 

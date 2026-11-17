@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Copy stdin to the clipboard with xclip, falling back to the terminal (OSC 52). Works over SSH.
+# Dependencies: xclip (optional)
 
 source require-colors
 

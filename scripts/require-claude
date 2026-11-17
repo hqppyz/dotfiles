@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Dependencies: fzf, jq
 
 source /usr/share/fzf/completion.bash
 
