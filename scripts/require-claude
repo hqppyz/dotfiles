@@ -1,20 +1,131 @@
 #!/usr/bin/env bash
 
-CLAUDE_AS_EFFORTS="low medium high"
+source /usr/share/fzf/completion.bash
 
-# claude-as MODEL DEFAULT_EFFORT [EFFORT] [claude args...]
-claude-as() {
-  local model=$1 effort=$2
-  shift 2
-  if [[ -n "$1" && " $CLAUDE_AS_EFFORTS " == *" $1 "* ]]; then
-    effort=$1
+_claude_models="haiku sonnet opus fable"
+_claude_efforts="low medium high"
+
+_claude_is() {
+  [[ -n "$2" && " $1 " == *" $2 "* ]]
+}
+
+_claude_dir() {
+  echo "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/${PWD//[^a-zA-Z0-9]/-}"
+}
+
+# Model, effort and title of session file $1, tab separated. Fails when the
+# session has no reply yet.
+_claude_session() {
+  local model effort title
+  model=$(tac "$1" | grep -m1 -o '"model":"claude-[a-z]*')
+  model=${model##*-}
+  [ -n "$model" ] || return 1
+  effort=$(tac "$1" | grep -m1 -o '"perTurnEffort":"[a-z]*')
+  effort=${effort##*\"}
+  title=$(tac "$1" | grep -m1 -oE '"(customTitle|aiTitle)":"[^"]*')
+  [ -n "$title" ] || title=$(tac "$1" | grep -m1 -o '"lastPrompt":"[^"]*')
+  title=${title#*\":\"}
+  printf '%s\t%s\t%s\n' "$model" "${effort:-?}" "${title:0:100}"
+}
+
+# claude [MODEL] [EFFORT...] [claude args...]
+# The last leading effort wins, so an alias default can be overridden.
+# Without a MODEL, a resumed session keeps its own model and effort.
+claude() {
+  local model effort args i row session_model session_effort
+  if _claude_is "$_claude_models" "$1"; then
+    model=$1
     shift
   fi
-  claude --model "$model" --effort "$effort" "$@"
+  while _claude_is "$_claude_efforts" "$1"; do
+    effort=$1
+    shift
+  done
+
+  args=("$@")
+  for i in "${!args[@]}"; do
+    [[ "${args[i]}" == --resume || "${args[i]}" == -r ]] || continue
+    if [ -z "$model" ] && row=$(_claude_session "$(_claude_dir)/${args[i+1]}.jsonl" 2>/dev/null); then
+      IFS=$'\t' read -r session_model session_effort _ <<< "$row"
+      model=$session_model
+      [[ -z "$effort" && "$session_effort" != "?" ]] && effort=$session_effort
+    fi
+    break
+  done
+
+  command claude ${model:+--model "$model"} ${effort:+--effort "$effort"} "${args[@]}"
 }
 
-_claude_as() {
-  local cur=${COMP_WORDS[COMP_CWORD]}
-  [ "$COMP_CWORD" -eq 1 ] && mapfile -t COMPREPLY < <(compgen -W "$CLAUDE_AS_EFFORTS" -- "$cur")
+# Candidate lines are "value<TAB>shown text"; only the value is inserted.
+_claude_complete_post() {
+  cut -f1
 }
-complete -F _claude_as haiku sonnet opus fable
+
+_claude_line() {
+  printf '%s\t%s%-10s%s %s%s%s\n' "$1" "$2" "$1" "$F_RESET" "$C_NEUTRAL_3" "$3" "$F_RESET"
+}
+
+_claude_words() {
+  local model=$1 efforts=$2 position=$3
+  if [[ -z "$model" && "$position" -eq 1 ]]; then
+    _claude_line haiku "$C_GREEN" "fastest, default effort low"
+    _claude_line sonnet "$C_BLUE" "balanced, default effort medium"
+    _claude_line opus "$C_PURPLE" "strong, default effort medium"
+    _claude_line fable "$C_ORANGE" "strongest, default effort high"
+  fi
+  if [ "$efforts" -eq 0 ]; then
+    _claude_line low "$C_HEAT1" "think less"
+    _claude_line medium "$C_HEAT2" "think normally"
+    _claude_line high "$C_HEAT3" "think more"
+  fi
+  _claude_line --continue "$C_NEUTRAL_1" "continue the latest session in this folder"
+  _claude_line --resume "$C_NEUTRAL_1" "pick a session in this folder to resume"
+}
+
+# Sessions of the current folder, most recently used first, only model $1 if given.
+_claude_sessions() {
+  local file model effort title row
+  local -A colors=([haiku]=$C_GREEN [sonnet]=$C_BLUE [opus]=$C_PURPLE [fable]=$C_ORANGE)
+  while IFS= read -r file; do
+    row=$(_claude_session "$file") || continue
+    IFS=$'\t' read -r model effort title <<< "$row"
+    [[ -n "$1" && "$model" != "$1" ]] && continue
+    printf '%s\t%s%(%m-%d %H:%M)T%s  %s[%s - %s]%s  %s\n' "$(basename "$file" .jsonl)" \
+      "$C_NEUTRAL_3" "$(stat -c %Y "$file")" "$F_RESET" \
+      "${colors[$model]:-$C_NEUTRAL_1}" "$model" "$effort" "$F_RESET" "$title"
+  done < <(ls -t "$(_claude_dir)"/*.jsonl 2>/dev/null)
+}
+
+_claude_complete() {
+  local prev=${COMP_WORDS[COMP_CWORD-1]} model i=1 efforts=0
+  local fzf_options=(--ansi --no-sort --exit-0 --bind tab:accept --delimiter '\t' --with-nth 2..)
+
+  if _claude_is "$_claude_models" "${COMP_WORDS[0]}"; then
+    model=${COMP_WORDS[0]}
+  elif [ "$COMP_CWORD" -gt 1 ] && _claude_is "$_claude_models" "${COMP_WORDS[1]}"; then
+    model=${COMP_WORDS[1]}
+    i=2
+  fi
+  for ((; i < COMP_CWORD; i++)); do
+    _claude_is "$_claude_efforts" "${COMP_WORDS[i]}" || break
+    efforts=$((efforts + 1))
+  done
+
+  if [[ "$prev" == --resume || "$prev" == -r ]]; then
+    local preview="jq -r 'select(.type == \"user\" and (.message.content | type) == \"string\" and (.message.content | startswith(\"<\") | not)) | .message.content + \"\n\"' $(printf %q "$(_claude_dir)")/{1}.jsonl | tail -n 200"
+    FZF_COMPLETION_TRIGGER= _fzf_complete "${fzf_options[@]}" \
+      --header "Resume ${model:-any model} session" \
+      --preview "$preview" --preview-window 'down,60%,wrap,follow' \
+      -- "$@" < <(_claude_sessions "$model")
+  elif [ "$i" -eq "$COMP_CWORD" ]; then
+    FZF_COMPLETION_TRIGGER= _fzf_complete "${fzf_options[@]}" --select-1 --bind space:accept \
+      -- "$@" < <(_claude_words "$model" "$efforts" "$COMP_CWORD")
+    # A model, effort or --resume has a next slot: once fzf's redraw request
+    # comes back, redraw and press Tab again to open it.
+    if _claude_is "$_claude_models $_claude_efforts --resume" "${COMPREPLY[0]}"; then
+      bind '"\e[0n": "\e[9999~\t"' 2>/dev/null
+    fi
+  fi
+}
+complete -F _claude_complete claude $_claude_models
+bind '"\e[9999~": redraw-current-line' 2>/dev/null

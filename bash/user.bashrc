@@ -4,10 +4,10 @@
 source require-colors
 source require-claude
 
-alias haiku="claude-as haiku low"
-alias sonnet="claude-as sonnet medium"
-alias opus="claude-as opus medium"
-alias fable="claude-as fable high"
+alias haiku="claude haiku low"
+alias sonnet="claude sonnet medium"
+alias opus="claude opus medium"
+alias fable="claude fable high"
 
 # Anti $HOME pollution
 alias vim='vim -i ~/.local/state/vim/viminfo'
