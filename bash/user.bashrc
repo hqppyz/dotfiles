@@ -2,6 +2,12 @@
 [[ $- != *i* ]] && return
 
 source require-colors
+source require-claude
+
+alias haiku="claude haiku low"
+alias sonnet="claude sonnet medium"
+alias opus="claude opus medium"
+alias fable="claude fable high"
 
 # Anti $HOME pollution
 alias vim='vim -i ~/.local/state/vim/viminfo'

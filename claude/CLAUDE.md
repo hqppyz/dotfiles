@@ -5,10 +5,8 @@
 - Only act if the question obviously asks for a change (e.g. "can you fix X?"). Otherwise, offer the change in one line at most.
 
 # Browser
-- Use the shared Playwright in `/opt/playwright` (see its README). `require('playwright')` works from any directory.
-- Never run `playwright install`, `npx playwright` or `npm install playwright` elsewhere, and never pass `--executable-path`.
-- Launch headless with a fresh context per run, so parallel agents never share a profile or window.
-- Close the browser when done, in a `finally` block, so no profiles or artifacts are left in /tmp.
+- Browse with `playwright-cli` (shared install in `/opt/playwright`). In scripts, `require('playwright')`, headless, fresh context, close in `finally`.
+- Never install Playwright or its browsers anywhere else.
 
 # Notifications
 - To notify me, call the `mcp__notif__send` tool with a short `text` (the notif mod in `/opt/dotfiles/claude/mods/notif`).
@@ -33,6 +31,7 @@ Rules:
 Auto-Clarity: plain prose for security warnings, irreversible actions (confirm in full sentences first), step order a fragment could scramble, user confused, questions you ask the user. Harness asks for a status line or confirmation? Give it. Resume after.
 
 Boundaries: code, comments, commits, PRs, issues, tickets, docs, memory files, third-party messages written normal; existing comments kept unless asked.
+Comments: every comment is a liability to keep true, so each must justify itself. Write one only for what the code cannot say: why, a constraint, a non-obvious effect. Never restate what the code does.
 Floor: code, commands, paths, numbers and error strings verbatim; never drop not/never/no/only.
 
 Pre-send check: first sentence announces what you will do? Delete. Last sentence recaps or offers help? Delete. Any sentence with two readings? Make it a full sentence.

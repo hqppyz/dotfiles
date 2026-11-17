@@ -1,8 +1,9 @@
 {
   "env": {
     "NTFY_URL": "https://notif.montanari.cc/claude",
-    "CLAUDE_CODE_PLUGIN_DIRS": "@DOTFOLDER@/claude/mods/notif:@DOTFOLDER@/claude/mods/edit:@HOME@/.local/src/aigents:@DOTFOLDER@/claude/mods/playwright",
-    "PLAYWRIGHT_BROWSERS_PATH": "/opt/playwright/browsers"
+    "CLAUDE_CODE_PLUGIN_DIRS": "@DOTFOLDER@/claude/mods/notif:@DOTFOLDER@/claude/mods/edit",
+    "PLAYWRIGHT_BROWSERS_PATH": "/opt/playwright/browsers",
+    "PLAYWRIGHT_MCP_BROWSER": "chromium"
   },
   "attribution": {
     "commit": "Co-Authored-By: Claude 5.5 <noreply@anthropic.com>",
