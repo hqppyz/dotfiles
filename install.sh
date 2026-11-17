@@ -87,9 +87,14 @@ prepend_dotfile() {
   echo "${C_BLUE}Prepending $src to $target${C_RESET}"
   "$DRY_RUN" || {
     remove_dotfile_includes "$target"
-    priv "$target" sed -i "1i\\
+    # sed has no line 1 to insert before in an empty file
+    if [[ -s "$target" ]]; then
+      priv "$target" sed -i "1i\\
 $marker\\
 $include" "$target"
+    else
+      printf '%s\n%s\n' "$marker" "$include" | priv "$target" tee "$target" > /dev/null
+    fi
   }
 
   return 0
@@ -218,6 +223,12 @@ prepend_dotfile "/etc/bash/bashrc" "/etc/bash.bashrc" "/etc/bashrc" -- "bash/sys
 
 INPUTRC_INCLUDE='$include %s'
 append_dotfile "/etc/inputrc" -- "inputrc" "$INPUTRC_INCLUDE"
+
+# kitty reads only the first config dir holding a kitty.conf, so the user one
+# includes the dotfiles first and its own settings override them
+KITTY_DIR="${KITTY_CONFIG_DIRECTORY:-${XDG_CONFIG_HOME:-$HOME/.config}/kitty}"
+"$DRY_RUN" || { mkdir -p "$KITTY_DIR" && { [[ -e "$KITTY_DIR/kitty.conf" ]] || touch "$KITTY_DIR/kitty.conf"; }; }
+prepend_dotfile "$KITTY_DIR/kitty.conf" -- "kitty/kitty.conf" 'include %s'
 
 # mpv reads /etc/mpv first and ~/.config/mpv after it, so user files override
 for f in mpv.conf input.conf; do
