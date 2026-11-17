@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+CLAUDE_AS_EFFORTS="low medium high"
+
+# claude-as MODEL DEFAULT_EFFORT [EFFORT] [claude args...]
+claude-as() {
+  local model=$1 effort=$2
+  shift 2
+  if [[ -n "$1" && " $CLAUDE_AS_EFFORTS " == *" $1 "* ]]; then
+    effort=$1
+    shift
+  fi
+  claude --model "$model" --effort "$effort" "$@"
+}
+
+_claude_as() {
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  [ "$COMP_CWORD" -eq 1 ] && mapfile -t COMPREPLY < <(compgen -W "$CLAUDE_AS_EFFORTS" -- "$cur")
+}
+complete -F _claude_as haiku sonnet opus fable
